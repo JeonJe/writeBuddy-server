@@ -2,7 +2,7 @@ package com.writebuddy.writebuddy.service
 
 import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
 import com.writebuddy.writebuddy.domain.Correction
-import com.writebuddy.writebuddy.domain.ErrorType
+import com.writebuddy.writebuddy.domain.FeedbackType
 import com.writebuddy.writebuddy.repository.CorrectionRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -16,18 +16,18 @@ class CorrectionService (
     fun save(request: CorrectionRequest): Correction {
         logger.info("교정 요청 처리 시작: {}", request.originSentence)
         
-        val (corrected, feedback, errorTypeStr) = openAiClient.generateCorrectionAndFeedbackWithType(request.originSentence)
-        val errorType = parseErrorType(errorTypeStr)
+        val (corrected, feedback, feedbackTypeStr) = openAiClient.generateCorrectionAndFeedbackWithType(request.originSentence)
+        val feedbackType = parseFeedbackType(feedbackTypeStr)
 
         val correction = Correction(
             originSentence = request.originSentence,
             correctedSentence = corrected,
             feedback = feedback,
-            errorType = errorType
+            feedbackType = feedbackType
         )
         
         val savedCorrection = correctionRepository.save(correction)
-        logger.info("교정 결과 저장 완료: id={}, errorType={}", savedCorrection.id, savedCorrection.errorType)
+        logger.info("교정 결과 저장 완료: id={}, feedbackType={}", savedCorrection.id, savedCorrection.feedbackType)
         
         return savedCorrection
     }
@@ -37,19 +37,19 @@ class CorrectionService (
         return correctionRepository.findAll()
     }
     
-    fun getErrorTypeStatistics(): Map<ErrorType, Long> {
-        logger.debug("오류 타입 통계 조회")
+    fun getFeedbackTypeStatistics(): Map<FeedbackType, Long> {
+        logger.debug("피드백 타입 통계 조회")
         return correctionRepository.findAll()
-            .groupBy { it.errorType }
+            .groupBy { it.feedbackType }
             .mapValues { it.value.size.toLong() }
     }
     
-    private fun parseErrorType(errorTypeStr: String): ErrorType {
+    private fun parseFeedbackType(feedbackTypeStr: String): FeedbackType {
         return try {
-            ErrorType.valueOf(errorTypeStr.uppercase())
+            FeedbackType.valueOf(feedbackTypeStr.uppercase())
         } catch (e: IllegalArgumentException) {
-            logger.warn("알 수 없는 오류 타입: {}. SYSTEM으로 설정", errorTypeStr)
-            ErrorType.SYSTEM
+            logger.warn("알 수 없는 피드백 타입: {}. SYSTEM으로 설정", feedbackTypeStr)
+            FeedbackType.SYSTEM
         }
     }
 }

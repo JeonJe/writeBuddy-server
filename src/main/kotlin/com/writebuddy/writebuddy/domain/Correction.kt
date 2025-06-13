@@ -15,13 +15,13 @@ class Correction(
     @Lob
     val feedback: String,
     @Enumerated(EnumType.STRING)
-    val errorType: ErrorType = ErrorType.GRAMMAR,
+    val feedbackType: FeedbackType = FeedbackType.GRAMMAR,
 ) : BaseEntity()
 
-enum class ErrorType {
-    GRAMMAR,     // 문법 오류
-    SPELLING,    // 철자 오류
+enum class FeedbackType {
+    GRAMMAR,     // 문법 교정
+    SPELLING,    // 철자 교정
     STYLE,       // 스타일 개선
-    PUNCTUATION, // 구두점 오류
-    SYSTEM       // 시스템 오류 (fallback)
+    PUNCTUATION, // 구두점 교정
+    SYSTEM       // 시스템 피드백 (fallback)
 }

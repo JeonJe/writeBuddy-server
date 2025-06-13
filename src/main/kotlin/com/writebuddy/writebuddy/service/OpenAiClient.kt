@@ -35,8 +35,8 @@ class OpenAiClient(
         private const val FEEDBACK_PREFIX_ENG = "FEEDBACK:"
         private const val TYPE_PREFIX_KOR = "유형:"
         private const val TYPE_PREFIX_ENG = "TYPE:"
-        private const val DEFAULT_ERROR_TYPE = "Grammar"
-        private const val FALLBACK_ERROR_TYPE = "SYSTEM"
+        private const val DEFAULT_FEEDBACK_TYPE = "Grammar"
+        private const val FALLBACK_FEEDBACK_TYPE = "SYSTEM"
         
         // API constants
         private const val API_ENDPOINT = "/chat/completions"
@@ -105,9 +105,9 @@ class OpenAiClient(
         val feedback = extractValue(lines, FEEDBACK_PREFIX_KOR, FEEDBACK_PREFIX_ENG)
             ?: content.split("\n").drop(1).joinToString(" ").trim()
         
-        val errorType = extractValue(lines, TYPE_PREFIX_KOR, TYPE_PREFIX_ENG) ?: DEFAULT_ERROR_TYPE
+        val feedbackType = extractValue(lines, TYPE_PREFIX_KOR, TYPE_PREFIX_ENG) ?: DEFAULT_FEEDBACK_TYPE
         
-        return Triple(corrected, feedback, errorType)
+        return Triple(corrected, feedback, feedbackType)
     }
     
     private fun extractValue(lines: List<String>, primaryPrefix: String, secondaryPrefix: String): String? {
@@ -117,6 +117,6 @@ class OpenAiClient(
     
     private fun getFallbackResponse(origin: String): Triple<String, String, String> {
         logger.warn("Using fallback response for: {}", origin)
-        return Triple(origin, FALLBACK_FEEDBACK, FALLBACK_ERROR_TYPE)
+        return Triple(origin, FALLBACK_FEEDBACK, FALLBACK_FEEDBACK_TYPE)
     }
 }

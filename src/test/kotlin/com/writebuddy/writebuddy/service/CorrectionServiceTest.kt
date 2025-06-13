@@ -2,7 +2,7 @@ package com.writebuddy.writebuddy.service
 
 import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
 import com.writebuddy.writebuddy.domain.Correction
-import com.writebuddy.writebuddy.domain.ErrorType
+import com.writebuddy.writebuddy.domain.FeedbackType
 import com.writebuddy.writebuddy.repository.CorrectionRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -42,7 +42,7 @@ class CorrectionServiceTest {
                 originSentence = "hello world",
                 correctedSentence = "Hello, world!",
                 feedback = "대문자로 시작해야 합니다.",
-                errorType = ErrorType.GRAMMAR
+                feedbackType = FeedbackType.GRAMMAR
             )
             
             given(openAiClient.generateCorrectionAndFeedbackWithType("hello world"))
@@ -53,8 +53,8 @@ class CorrectionServiceTest {
             val result = correctionService.save(request)
 
             assertThat(result)
-                .extracting("originSentence", "correctedSentence", "feedback", "errorType")
-                .containsExactly("hello world", "Hello, world!", "대문자로 시작해야 합니다.", ErrorType.GRAMMAR)
+                .extracting("originSentence", "correctedSentence", "feedback", "feedbackType")
+                .containsExactly("hello world", "Hello, world!", "대문자로 시작해야 합니다.", FeedbackType.GRAMMAR)
         }
     }
 
@@ -71,14 +71,14 @@ class CorrectionServiceTest {
                     originSentence = "hello world",
                     correctedSentence = "Hello, world!",
                     feedback = "대문자로 시작해야 합니다.",
-                    errorType = ErrorType.GRAMMAR
+                    feedbackType = FeedbackType.GRAMMAR
                 ),
                 Correction(
                     id = 2L,
                     originSentence = "i am student",
                     correctedSentence = "I am a student.",
                     feedback = "대문자와 관사를 추가해야 합니다.",
-                    errorType = ErrorType.GRAMMAR
+                    feedbackType = FeedbackType.GRAMMAR
                 )
             )
             
@@ -94,61 +94,61 @@ class CorrectionServiceTest {
     }
 
     @Nested
-    @DisplayName("오류 타입 통계 조회 기능")
-    inner class GetErrorTypeStatisticsTests {
+    @DisplayName("피드백 타입 통계 조회 기능")
+    inner class GetFeedbackTypeStatisticsTests {
         
         @Test
-        @DisplayName("오류 타입별 통계를 반환한다")
-        fun getErrorTypeStatistics_returnStatistics() {
+        @DisplayName("피드백 타입별 통계를 반환한다")
+        fun getFeedbackTypeStatistics_returnStatistics() {
             val corrections = listOf(
                 Correction(
                     id = 1L,
                     originSentence = "hello world",
                     correctedSentence = "Hello, world!",
                     feedback = "대문자로 시작해야 합니다.",
-                    errorType = ErrorType.GRAMMAR
+                    feedbackType = FeedbackType.GRAMMAR
                 ),
                 Correction(
                     id = 2L,
                     originSentence = "speling mistake",
                     correctedSentence = "spelling mistake",
                     feedback = "철자를 확인하세요.",
-                    errorType = ErrorType.SPELLING
+                    feedbackType = FeedbackType.SPELLING
                 ),
                 Correction(
                     id = 3L,
                     originSentence = "another grammar",
                     correctedSentence = "Another grammar",
                     feedback = "대문자로 시작하세요.",
-                    errorType = ErrorType.GRAMMAR
+                    feedbackType = FeedbackType.GRAMMAR
                 )
             )
             
             given(correctionRepository.findAll()).willReturn(corrections)
 
-            val result = correctionService.getErrorTypeStatistics()
+            val result = correctionService.getFeedbackTypeStatistics()
 
             assertThat(result)
                 .hasSize(2)
-                .containsEntry(ErrorType.GRAMMAR, 2L)
-                .containsEntry(ErrorType.SPELLING, 1L)
+                .containsEntry(FeedbackType.GRAMMAR, 2L)
+                .containsEntry(FeedbackType.SPELLING, 1L)
         }
     }
 
     @Nested
-    @DisplayName("오류 타입 파싱 기능")
-    inner class ParseErrorTypeTests {
+    @DisplayName("피드백 타입 파싱 기능")
+    inner class ParseFeedbackTypeTests {
         
         @Test
-        @DisplayName("유효한 오류 타입 문자열을 파싱한다")
-        fun parseErrorType_validErrorType() {
+        @DisplayName("유효한 피드백 타입 문자열을 파싱한다")
+        fun parseFeedbackType_validFeedbackType() {
             val request = CorrectionRequest("test sentence")
             val mockCorrection = Correction(
                 id = 1L,
                 originSentence = "test sentence",
                 correctedSentence = "Test sentence.",
                 feedback = "테스트 피드백",
-                errorType = ErrorType.SPELLING
+                feedbackType = FeedbackType.SPELLING
             )
             
             given(openAiClient.generateCorrectionAndFeedbackWithType("test sentence"))
@@ -158,19 +158,19 @@ class CorrectionServiceTest {
 
             val result = correctionService.save(request)
 
-            assertThat(result.errorType).isEqualTo(ErrorType.SPELLING)
+            assertThat(result.feedbackType).isEqualTo(FeedbackType.SPELLING)
         }
         
         @Test
-        @DisplayName("잘못된 오류 타입 문자열은 SYSTEM으로 기본값 설정")
-        fun parseErrorType_invalidErrorTypeFallbackToSystem() {
+        @DisplayName("잘못된 피드백 타입 문자열은 SYSTEM으로 기본값 설정")
+        fun parseFeedbackType_invalidFeedbackTypeFallbackToSystem() {
             val request = CorrectionRequest("test sentence")
             val mockCorrection = Correction(
                 id = 1L,
                 originSentence = "test sentence",
                 correctedSentence = "Test sentence.",
                 feedback = "테스트 피드백",
-                errorType = ErrorType.SYSTEM
+                feedbackType = FeedbackType.SYSTEM
             )
             
             given(openAiClient.generateCorrectionAndFeedbackWithType("test sentence"))
@@ -180,7 +180,7 @@ class CorrectionServiceTest {
 
             val result = correctionService.save(request)
 
-            assertThat(result.errorType).isEqualTo(ErrorType.SYSTEM)
+            assertThat(result.feedbackType).isEqualTo(FeedbackType.SYSTEM)
         }
     }
 }

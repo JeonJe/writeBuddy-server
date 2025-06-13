@@ -1,7 +1,7 @@
 package com.writebuddy.writebuddy.controller.dto.response
 
 import com.writebuddy.writebuddy.domain.Correction
-import com.writebuddy.writebuddy.domain.ErrorType
+import com.writebuddy.writebuddy.domain.FeedbackType
 import java.time.LocalDateTime
 
 data class CorrectionResponse(
@@ -9,7 +9,7 @@ data class CorrectionResponse(
     val originSentence: String,
     val correctedSentence: String,
     val feedBack: String,
-    val errorType: ErrorType,
+    val feedbackType: FeedbackType,
     val creatdAt: LocalDateTime
 ) {
     companion object {
@@ -21,7 +21,7 @@ data class CorrectionResponse(
                 originSentence = correction.originSentence,
                 correctedSentence = correction.correctedSentence,
                 feedBack = correction.feedback,
-                errorType = correction.errorType,
+                feedbackType = correction.feedbackType,
                 creatdAt = correction.createdAt ?: LocalDateTime.now()
             )
         }
