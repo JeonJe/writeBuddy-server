@@ -7,13 +7,18 @@ import org.springframework.stereotype.Service
 
 @Service
 class CorrectionService (
-    private val correctionRepository: CorrectionRepository
+    private val correctionRepository: CorrectionRepository,
+    private val openAiClient : OpenAiClient,
 ){
     fun save(request: CorrectionRequest): Correction {
+        val origin = request.originSentence
+        val (corrected, feedback) = openAiClient.generateCorrectionAndFeedback(origin)
+
+
         val correction = Correction(
             originSentence = request.originSentence,
-            correctedSentence = request.correctedSentence,
-            feedback = request.feedback
+            correctedSentence = corrected,
+            feedback = feedback
         )
         val save = correctionRepository.save(correction)
         return save

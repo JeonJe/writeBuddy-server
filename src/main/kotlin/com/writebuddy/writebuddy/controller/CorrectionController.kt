@@ -3,6 +3,7 @@ package com.writebuddy.writebuddy.controller
 import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
 import com.writebuddy.writebuddy.controller.dto.response.CorrectionResponse
 import com.writebuddy.writebuddy.service.CorrectionService
+import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -16,7 +17,7 @@ class CorrectionController(
 ) {
 
     @PostMapping()
-    fun create(@RequestBody request: CorrectionRequest) : CorrectionResponse {
+    fun create(@RequestBody @Valid request: CorrectionRequest) : CorrectionResponse {
         val saved = correctionService.save(request)
         return CorrectionResponse.from(saved)
     }

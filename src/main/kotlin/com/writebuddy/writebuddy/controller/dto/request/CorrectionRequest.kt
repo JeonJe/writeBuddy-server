@@ -1,7 +1,7 @@
 package com.writebuddy.writebuddy.controller.dto.request
 
+import jakarta.validation.constraints.NotBlank
+
 data class CorrectionRequest(
-    val originSentence: String,
-    val correctedSentence: String,
-    val feedback: String,
+    @field:NotBlank val originSentence: String
 )
