@@ -38,3 +38,24 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Sensitive Files ###
+# Claude Code related files
+.claude/
+CLAUDE.md
+
+# Configuration files with sensitive data
+src/main/resources/application-prod.properties
+src/main/resources/application-dev.properties
+src/main/resources/application-local.properties
+**/application-*.properties
+
+# API Keys and secrets
+*.env
+.env.*
+secrets/
+keys/
+
+# Logs
+logs/
+*.log

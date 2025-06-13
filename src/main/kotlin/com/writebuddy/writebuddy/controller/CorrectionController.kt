@@ -2,6 +2,7 @@ package com.writebuddy.writebuddy.controller
 
 import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
 import com.writebuddy.writebuddy.controller.dto.response.CorrectionResponse
+import com.writebuddy.writebuddy.domain.ErrorType
 import com.writebuddy.writebuddy.service.CorrectionService
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
@@ -26,5 +27,10 @@ class CorrectionController(
     fun getAll(): List<CorrectionResponse> {
         val corrections = correctionService.getAll()
         return corrections.map { CorrectionResponse.from(it) }
+    }
+    
+    @GetMapping("/statistics")
+    fun getStatistics(): Map<ErrorType, Long> {
+        return correctionService.getErrorTypeStatistics()
     }
 }

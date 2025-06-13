@@ -14,4 +14,14 @@ class Correction(
     val correctedSentence: String,
     @Lob
     val feedback: String,
+    @Enumerated(EnumType.STRING)
+    val errorType: ErrorType = ErrorType.GRAMMAR,
 ) : BaseEntity()
+
+enum class ErrorType {
+    GRAMMAR,     // 문법 오류
+    SPELLING,    // 철자 오류
+    STYLE,       // 스타일 개선
+    PUNCTUATION, // 구두점 오류
+    SYSTEM       // 시스템 오류 (fallback)
+}

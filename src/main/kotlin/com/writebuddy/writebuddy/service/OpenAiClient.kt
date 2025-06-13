@@ -1,46 +1,122 @@
 package com.writebuddy.writebuddy.service
 
+import org.slf4j.LoggerFactory
+import org.springframework.retry.annotation.Backoff
+import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
+import org.springframework.web.client.RestClientException
 
 @Component
 class OpenAiClient(
     private val restClient: RestClient
 ) {
+    private val logger = LoggerFactory.getLogger(OpenAiClient::class.java)
+    
+    companion object {
+        private const val MODEL = "gpt-3.5-turbo"
+        private const val TEMPERATURE = 0.3
+        private const val MAX_RETRIES = 3
+        private const val RETRY_DELAY = 1000L
+        private const val RETRY_MULTIPLIER = 2.0
+        
+        private val SYSTEM_PROMPT = """당신은 영어 문법 교정 선생님입니다. 반드시 다음 형식으로 한국어로 응답해주세요:
+교정문: [교정된 문장]
+피드백: [한국어로 설명]
+유형: [Grammar/Spelling/Style/Punctuation 중 하나]""".trimIndent()
+        
+        private const val USER_PROMPT_TEMPLATE = "다음 영어 문장을 교정하고 한국어로 설명해주세요:\n%s"
+        private const val FALLBACK_FEEDBACK = "죄송합니다. 현재 교정 서비스에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요."
+        
+        // Response parsing constants
+        private const val CORRECTED_PREFIX_KOR = "교정문:"
+        private const val CORRECTED_PREFIX_ENG = "CORRECTED:"
+        private const val FEEDBACK_PREFIX_KOR = "피드백:"
+        private const val FEEDBACK_PREFIX_ENG = "FEEDBACK:"
+        private const val TYPE_PREFIX_KOR = "유형:"
+        private const val TYPE_PREFIX_ENG = "TYPE:"
+        private const val DEFAULT_ERROR_TYPE = "Grammar"
+        private const val FALLBACK_ERROR_TYPE = "SYSTEM"
+        
+        // API constants
+        private const val API_ENDPOINT = "/chat/completions"
+        private const val ROLE_SYSTEM = "system"
+        private const val ROLE_USER = "user"
+    }
+
+    @Retryable(
+        value = [RestClientException::class],
+        maxAttempts = MAX_RETRIES,
+        backoff = Backoff(delay = RETRY_DELAY, multiplier = RETRY_MULTIPLIER)
+    )
     fun generateCorrectionAndFeedback(origin: String): Pair<String, String> {
-        val messages = listOf(
-            mapOf("role" to "system", "content" to "You are an English grammar correction teacher. Please respond in the following format:\nCORRECTED: [corrected sentence]\nFEEDBACK: [explanation in Korean]"),
-            mapOf("role" to "user", "content" to "Please correct this English sentence and explain why:\n$origin")
-        )
-
-        val request = mapOf(
-            "model" to "gpt-3.5-turbo",
-            "messages" to messages,
-            "temperature" to 0.7
-        )
-
-        val response = restClient.post()
-            .uri("/chat/completions")
+        val (corrected, feedback, _) = generateCorrectionAndFeedbackWithType(origin)
+        return corrected to feedback
+    }
+    
+    fun generateCorrectionAndFeedbackWithType(origin: String): Triple<String, String, String> {
+        return try {
+            logger.info("Requesting OpenAI correction with type for: {}", origin)
+            
+            val response = callOpenAiApi(origin)
+            val content = response?.choices?.firstOrNull()?.message?.content ?: ""
+            logger.info("OpenAI response received: {}", content)
+            
+            parseEnhancedResponse(content)
+            
+        } catch (e: Exception) {
+            logger.error("Error calling OpenAI API: {}", e.message, e)
+            getFallbackResponse(origin)
+        }
+    }
+    
+    private fun callOpenAiApi(origin: String): ChatCompletionResponse? {
+        val messages = createMessages(origin)
+        val request = createRequest(messages)
+        
+        return restClient.post()
+            .uri(API_ENDPOINT)
             .body(request)
             .retrieve()
             .body(ChatCompletionResponse::class.java)
-
-        val content = response?.choices?.firstOrNull()?.message?.content ?: ""
-        val (corrected, feedback) = parseResponse(content)
-        return corrected to feedback
+    }
+    
+    private fun createMessages(origin: String): List<Map<String, String>> {
+        return listOf(
+            mapOf("role" to ROLE_SYSTEM, "content" to SYSTEM_PROMPT),
+            mapOf("role" to ROLE_USER, "content" to USER_PROMPT_TEMPLATE.format(origin))
+        )
+    }
+    
+    private fun createRequest(messages: List<Map<String, String>>): Map<String, Any> {
+        return mapOf(
+            "model" to MODEL,
+            "messages" to messages,
+            "temperature" to TEMPERATURE
+        )
     }
 
-    private fun parseResponse(content: String): Pair<String, String> {
+    private fun parseEnhancedResponse(content: String): Triple<String, String, String> {
         val lines = content.lines()
-        val corrected = lines.find { it.startsWith("CORRECTED:") }?.removePrefix("CORRECTED:")?.trim() 
-            ?: lines.find { it.startsWith("교정문:") }?.removePrefix("교정문:")?.trim() 
+        
+        val corrected = extractValue(lines, CORRECTED_PREFIX_KOR, CORRECTED_PREFIX_ENG)
             ?: content.split("\n").firstOrNull()?.trim() ?: ""
         
-        val feedback = lines.find { it.startsWith("FEEDBACK:") }?.removePrefix("FEEDBACK:")?.trim() 
-            ?: lines.find { it.startsWith("피드백:") }?.removePrefix("피드백:")?.trim() 
+        val feedback = extractValue(lines, FEEDBACK_PREFIX_KOR, FEEDBACK_PREFIX_ENG)
             ?: content.split("\n").drop(1).joinToString(" ").trim()
         
-        return corrected to feedback
+        val errorType = extractValue(lines, TYPE_PREFIX_KOR, TYPE_PREFIX_ENG) ?: DEFAULT_ERROR_TYPE
+        
+        return Triple(corrected, feedback, errorType)
     }
-
+    
+    private fun extractValue(lines: List<String>, primaryPrefix: String, secondaryPrefix: String): String? {
+        return lines.find { it.startsWith(primaryPrefix) }?.removePrefix(primaryPrefix)?.trim()
+            ?: lines.find { it.startsWith(secondaryPrefix) }?.removePrefix(secondaryPrefix)?.trim()
+    }
+    
+    private fun getFallbackResponse(origin: String): Triple<String, String, String> {
+        logger.warn("Using fallback response for: {}", origin)
+        return Triple(origin, FALLBACK_FEEDBACK, FALLBACK_ERROR_TYPE)
+    }
 }
