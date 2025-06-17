@@ -4,6 +4,7 @@ import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
 import com.writebuddy.writebuddy.domain.Correction
 import com.writebuddy.writebuddy.domain.FeedbackType
 import com.writebuddy.writebuddy.repository.CorrectionRepository
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -12,7 +13,7 @@ class CorrectionService (
     private val correctionRepository: CorrectionRepository,
     private val openAiClient : OpenAiClient,
 ){
-    private val logger = LoggerFactory.getLogger(CorrectionService::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(CorrectionService::class.java)
     fun save(request: CorrectionRequest): Correction {
         logger.info("교정 요청 처리 시작: {}", request.originSentence)
         

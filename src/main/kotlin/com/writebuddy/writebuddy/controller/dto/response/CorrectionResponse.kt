@@ -8,9 +8,9 @@ data class CorrectionResponse(
     val id: Long,
     val originSentence: String,
     val correctedSentence: String,
-    val feedBack: String,
+    val feedback: String,
     val feedbackType: FeedbackType,
-    val creatdAt: LocalDateTime
+    val createdAt: LocalDateTime
 ) {
     companion object {
         fun from(
@@ -20,9 +20,9 @@ data class CorrectionResponse(
                 id = correction.id,
                 originSentence = correction.originSentence,
                 correctedSentence = correction.correctedSentence,
-                feedBack = correction.feedback,
+                feedback = correction.feedback,
                 feedbackType = correction.feedbackType,
-                creatdAt = correction.createdAt ?: LocalDateTime.now()
+                createdAt = correction.createdAt ?: LocalDateTime.now()
             )
         }
     }

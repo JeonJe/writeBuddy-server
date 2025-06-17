@@ -54,8 +54,8 @@ class CorrectionControllerTest {
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.originSentence").value("hello world"))
                 .andExpect(jsonPath("$.correctedSentence").value("Hello, world!"))
-                .andExpect(jsonPath("$.feedBack").value("대문자로 시작해야 합니다."))
-                .andExpect(jsonPath("$.creatdAt").exists())
+                .andExpect(jsonPath("$.feedback").value("대문자로 시작해야 합니다."))
+                .andExpect(jsonPath("$.createdAt").exists())
         }
     }
 

@@ -1,5 +1,6 @@
 package com.writebuddy.writebuddy.service
 
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Retryable
@@ -11,7 +12,7 @@ import org.springframework.web.client.RestClientException
 class OpenAiClient(
     private val restClient: RestClient
 ) {
-    private val logger = LoggerFactory.getLogger(OpenAiClient::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(OpenAiClient::class.java)
     
     companion object {
         private const val MODEL = "gpt-3.5-turbo"
