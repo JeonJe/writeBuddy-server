@@ -29,7 +29,7 @@ class UserController(
     @GetMapping("/{username}")
     fun getUserByUsername(@PathVariable username: String): UserResponse {
         val user = userService.getUserByUsername(username)
-            ?: throw IllegalArgumentException("사용자를 찾을 수 없습니다: $username")
+        requireNotNull(user) { "사용자를 찾을 수 없습니다: $username" }
         return UserResponse.from(user)
     }
     

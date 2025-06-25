@@ -3,27 +3,32 @@ package com.writebuddy.writebuddy.controller
 import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
 import com.writebuddy.writebuddy.controller.dto.request.UpdateMemoRequest
 import com.writebuddy.writebuddy.controller.dto.response.CorrectionResponse
+import com.writebuddy.writebuddy.controller.dto.response.RealExampleResponse
 import com.writebuddy.writebuddy.domain.FeedbackType
 import com.writebuddy.writebuddy.service.CorrectionService
+import com.writebuddy.writebuddy.service.RealExampleService
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/corrections")
 class CorrectionController(
-    private val correctionService: CorrectionService
+    private val correctionService: CorrectionService,
+    private val realExampleService: RealExampleService
 ) {
 
     @PostMapping()
     fun create(@RequestBody @Valid request: CorrectionRequest) : CorrectionResponse {
         val saved = correctionService.save(request)
-        return CorrectionResponse.from(saved)
+        val examples = realExampleService.findRelatedExamples(saved.correctedSentence)
+        return CorrectionResponse.from(saved, examples)
     }
     
     @PostMapping("/users/{userId}")
     fun createWithUser(@PathVariable userId: Long, @RequestBody @Valid request: CorrectionRequest) : CorrectionResponse {
         val saved = correctionService.save(request, userId)
-        return CorrectionResponse.from(saved)
+        val examples = realExampleService.findRelatedExamples(saved.correctedSentence)
+        return CorrectionResponse.from(saved, examples)
     }
 
     @GetMapping
@@ -77,4 +82,5 @@ class CorrectionController(
         val correction = correctionService.updateMemo(id, request.memo)
         return CorrectionResponse.from(correction)
     }
+    
 }

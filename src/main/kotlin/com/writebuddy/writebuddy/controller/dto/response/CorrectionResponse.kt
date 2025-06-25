@@ -2,6 +2,7 @@ package com.writebuddy.writebuddy.controller.dto.response
 
 import com.writebuddy.writebuddy.domain.Correction
 import com.writebuddy.writebuddy.domain.FeedbackType
+import com.writebuddy.writebuddy.domain.RealExample
 import java.time.LocalDateTime
 
 data class CorrectionResponse(
@@ -13,11 +14,13 @@ data class CorrectionResponse(
     val score: Int?,
     val isFavorite: Boolean,
     val memo: String?,
-    val createdAt: LocalDateTime
+    val createdAt: LocalDateTime,
+    val relatedExamples: List<RealExampleResponse> = emptyList()
 ) {
     companion object {
         fun from(
-            correction: Correction
+            correction: Correction,
+            examples: List<RealExample> = emptyList()
         ): CorrectionResponse {
             return CorrectionResponse(
                 id = correction.id,
@@ -28,7 +31,8 @@ data class CorrectionResponse(
                 score = correction.score,
                 isFavorite = correction.isFavorite,
                 memo = correction.memo,
-                createdAt = correction.createdAt ?: LocalDateTime.now()
+                createdAt = correction.createdAt ?: LocalDateTime.now(),
+                relatedExamples = examples.map { RealExampleResponse.from(it) }
             )
         }
     }

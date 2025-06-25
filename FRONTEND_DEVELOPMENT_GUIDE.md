@@ -6,17 +6,18 @@
 - **백엔드**: Spring Boot + Kotlin
 - **데이터베이스**: H2 (개발용) + JPA/Hibernate
 - **API 스타일**: REST API with JSON
-- **개발 서버**: `http://localhost:9001`
+- **개발 서버**: `http://localhost:9091`
 
 ## 🎯 핵심 기능
 
 ### ⭐ 주요 특징
 1. **AI 문법 교정**: OpenAI 기반 실시간 교정
 2. **점수 시스템**: 1-10점 품질 평가
-3. **학습 대시보드**: 통계 및 진도 추적
-4. **즐겨찾기**: 중요한 교정 결과 북마크
-5. **개인 노트**: 학습 메모 기능
-6. **사용자 시스템**: 개인별 진도 관리
+3. **실제 사용 예시**: 영화, 가사, 기사 등에서 교정된 표현의 실제 사용 사례 제공
+4. **학습 대시보드**: 통계 및 진도 추적
+5. **즐겨찾기**: 중요한 교정 결과 북마크
+6. **개인 노트**: 학습 메모 기능
+7. **사용자 시스템**: 개인별 진도 관리
 
 ## 🔌 API 엔드포인트
 
@@ -24,7 +25,7 @@
 
 #### 기본 교정 요청
 ```http
-POST http://localhost:9001/corrections
+POST http://localhost:9091/corrections
 Content-Type: application/json
 
 {
@@ -43,7 +44,24 @@ Content-Type: application/json
   "score": 7,
   "isFavorite": false,
   "memo": null,
-  "createdAt": "2025-06-25T21:30:00"
+  "createdAt": "2025-06-25T21:30:00",
+  "relatedExamples": [
+    {
+      "id": 1,
+      "phrase": "I couldn't agree more",
+      "source": "Friends (TV Show)",
+      "sourceType": "MOVIE",
+      "sourceTypeDisplay": "영화/드라마",
+      "sourceTypeEmoji": "🎬",
+      "context": "Ross agrees enthusiastically with Rachel's opinion about Monica's cooking",
+      "url": "https://www.youtube.com/watch?v=example",
+      "timestamp": "05:23",
+      "difficulty": 6,
+      "tags": ["agreement", "enthusiasm", "conversation"],
+      "isVerified": true,
+      "createdAt": "2025-06-25T21:30:00"
+    }
+  ]
 }
 ```
 
@@ -172,6 +190,78 @@ Content-Type: application/json
 }
 ```
 
+### 🎬 실제 사용 예시 API
+
+#### 키워드로 예시 검색
+```http
+GET /examples/search?keyword=agreement
+```
+
+**응답 예시:**
+```json
+[
+  {
+    "id": 1,
+    "phrase": "I couldn't agree more",
+    "source": "Friends (TV Show)",
+    "sourceType": "MOVIE",
+    "sourceTypeDisplay": "영화/드라마",
+    "sourceTypeEmoji": "🎬",
+    "context": "Ross agrees enthusiastically with Rachel's opinion",
+    "url": "https://www.youtube.com/watch?v=example",
+    "timestamp": "05:23",
+    "difficulty": 6,
+    "tags": ["agreement", "enthusiasm", "conversation"],
+    "isVerified": true,
+    "createdAt": "2025-06-25T21:30:00"
+  }
+]
+```
+
+#### 특정 구문으로 예시 찾기
+```http
+GET /examples/phrase?phrase=break a leg
+```
+
+#### 랜덤 예시 조회
+```http
+GET /examples/random?count=3
+```
+
+#### 오늘의 추천 예시
+```http
+GET /examples/daily
+```
+
+#### 출처 타입별 예시 조회
+```http
+GET /examples/source/MOVIE
+GET /examples/source/SONG
+GET /examples/source/NEWS
+```
+
+#### 난이도별 예시 조회
+```http
+GET /examples/difficulty?minDifficulty=1&maxDifficulty=5
+```
+
+#### 새 예시 추가
+```http
+POST /examples
+Content-Type: application/json
+
+{
+  "phrase": "It's raining cats and dogs",
+  "source": "BBC Weather Report",
+  "sourceType": "NEWS",
+  "context": "Weather presenter describing heavy rainfall",
+  "url": "https://bbc.co.uk/weather",
+  "difficulty": 8,
+  "tags": "weather, idiom, heavy rain",
+  "isVerified": true
+}
+```
+
 ### 👤 사용자 관리
 
 #### 사용자 생성
@@ -238,6 +328,7 @@ interface Correction {
   isFavorite: boolean;
   memo: string | null;
   createdAt: string;     // ISO 8601 format
+  relatedExamples: RealExample[];  // 관련 실제 사용 예시
 }
 ```
 
@@ -248,6 +339,37 @@ interface User {
   username: string;
   email: string;
   createdAt: string;
+}
+```
+
+### 실제 사용 예시 (RealExample)
+```typescript
+interface RealExample {
+  id: number;
+  phrase: string;                    // 실제 사용된 표현
+  source: string;                    // 출처 (영화명, 노래명 등)
+  sourceType: ExampleSourceType;     // 출처 타입
+  sourceTypeDisplay: string;         // 출처 타입 표시명
+  sourceTypeEmoji: string;           // 출처 타입 이모지
+  context: string;                   // 사용된 맥락/상황 설명
+  url?: string;                      // 관련 링크 (YouTube, 기사 등)
+  timestamp?: string;                // 영상의 경우 타임스탬프
+  difficulty: number;                // 1-10 난이도
+  tags: string[];                    // 검색용 태그 배열
+  isVerified: boolean;               // 검증된 예시인지 여부
+  createdAt: string;
+  updatedAt?: string;
+}
+
+enum ExampleSourceType {
+  MOVIE = "MOVIE",        // 영화/드라마 🎬
+  SONG = "SONG",          // 음악/가사 🎵
+  NEWS = "NEWS",          // 뉴스/기사 📰
+  BOOK = "BOOK",          // 문학/도서 📚
+  INTERVIEW = "INTERVIEW", // 인터뷰 🎤
+  SOCIAL = "SOCIAL",      // 소셜미디어 📱
+  SPEECH = "SPEECH",      // 연설/강연 🎙️
+  PODCAST = "PODCAST"     // 팟캐스트 🎧
 }
 ```
 
@@ -348,6 +470,7 @@ interface User {
 ### 1단계: MVP (핵심 기능)
 - [ ] 기본 교정 입력/출력 화면
 - [ ] 점수 표시 (색상 코딩)
+- [ ] **실제 사용 예시 표시** (교정 결과와 함께 자동 제공)
 - [ ] 즐겨찾기 토글 기능
 - [ ] 교정 목록 페이지
 
@@ -364,6 +487,8 @@ interface User {
 
 ### 4단계: 고급 기능
 - [ ] 개인 노트 편집기
+- [ ] 실제 사용 예시 고급 검색 (키워드, 출처별, 난이도별)
+- [ ] 실제 사용 예시 즐겨찾기 및 학습 노트
 - [ ] 고급 필터링/검색
 - [ ] 학습 스트릭 표시
 - [ ] 성취 뱃지 시스템
@@ -417,5 +542,43 @@ interface User {
 - 주간/월간 목표 설정
 - 점수 향상 축하 메시지
 - 레벨업 시스템
+
+## 🎬 실제 사용 예시 UX 가이드
+
+### 예시 카드 디자인
+```
+┌─────────────────────────────────────┐
+│ 🎬 "I couldn't agree more"          │
+│ 출처: Friends (TV Show)             │
+│                                     │
+│ 📝 Ross가 Rachel의 의견에 열정적으로 │
+│    동의하며 말하는 장면              │
+│                                     │
+│ 🔗 YouTube 05:23  📈 난이도: 6/10   │
+│ 🏷️ #동의 #열정 #대화               │
+└─────────────────────────────────────┘
+```
+
+### 출처 타입별 아이콘
+- 🎬 영화/드라마: 빨간색 배경
+- 🎵 음악/가사: 보라색 배경  
+- 📰 뉴스/기사: 파란색 배경
+- 📚 문학/도서: 갈색 배경
+- 🎤 인터뷰: 주황색 배경
+- 📱 소셜미디어: 핑크색 배경
+- 🎙️ 연설/강연: 회색 배경
+- 🎧 팟캐스트: 초록색 배경
+
+### 난이도 표시
+- 1-3: 🟢 초급 (Beginner)
+- 4-6: 🟡 중급 (Intermediate)  
+- 7-8: 🟠 중상급 (Upper-Intermediate)
+- 9-10: 🔴 고급 (Advanced)
+
+### 인터랙션
+- 클릭 시 상세 모달 표시
+- URL 있는 경우 "원본 보기" 버튼
+- 타임스탬프 있는 경우 직접 재생
+- 태그 클릭 시 관련 예시 검색
 
 이 가이드를 참고하여 사용자 친화적이고 효과적인 영어 학습 도구를 개발하세요! 🚀
