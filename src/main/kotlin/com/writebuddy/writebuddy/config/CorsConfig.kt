@@ -13,14 +13,14 @@ class CorsConfig {
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
         
-        // 허용할 Origin 설정 (프론트엔드 개발 서버)
+        // 허용할 Origin 설정 (웹 서버용)
         configuration.allowedOriginPatterns = listOf(
-            "http://localhost:3000",
-            "http://localhost:3001", 
-            "http://localhost:8080",  // 웹 서버용
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:3001",
-            "http://127.0.0.1:8080"
+            "http://localhost:8080",  // 웹 서버
+            "http://localhost:9090",  // 추가 웹 서버
+            "http://localhost:9091",  // 백엔드 서버
+            "http://127.0.0.1:8080",
+            "http://127.0.0.1:9090", 
+            "http://127.0.0.1:9091"
         )
         
         // 허용할 HTTP 메서드
