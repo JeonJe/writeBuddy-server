@@ -4,6 +4,7 @@ import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
 import com.writebuddy.writebuddy.domain.Correction
 import com.writebuddy.writebuddy.domain.FeedbackType
 import com.writebuddy.writebuddy.repository.CorrectionRepository
+import com.writebuddy.writebuddy.service.Quadruple
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -42,11 +43,12 @@ class CorrectionServiceTest {
                 originSentence = "hello world",
                 correctedSentence = "Hello, world!",
                 feedback = "대문자로 시작해야 합니다.",
-                feedbackType = FeedbackType.GRAMMAR
+                feedbackType = FeedbackType.GRAMMAR,
+                score = 8
             )
             
-            given(openAiClient.generateCorrectionAndFeedbackWithType("hello world"))
-                .willReturn(Triple("Hello, world!", "대문자로 시작해야 합니다.", "GRAMMAR"))
+            given(openAiClient.generateCorrectionAndFeedbackWithScore("hello world"))
+                .willReturn(Quadruple("Hello, world!", "대문자로 시작해야 합니다.", "GRAMMAR", 8))
             given(correctionRepository.save(any()))
                 .willReturn(mockCorrection)
 
@@ -148,11 +150,12 @@ class CorrectionServiceTest {
                 originSentence = "test sentence",
                 correctedSentence = "Test sentence.",
                 feedback = "테스트 피드백",
-                feedbackType = FeedbackType.SPELLING
+                feedbackType = FeedbackType.SPELLING,
+                score = 7
             )
             
-            given(openAiClient.generateCorrectionAndFeedbackWithType("test sentence"))
-                .willReturn(Triple("Test sentence.", "테스트 피드백", "spelling"))
+            given(openAiClient.generateCorrectionAndFeedbackWithScore("test sentence"))
+                .willReturn(Quadruple("Test sentence.", "테스트 피드백", "spelling", 7))
             given(correctionRepository.save(any()))
                 .willReturn(mockCorrection)
 
@@ -170,11 +173,12 @@ class CorrectionServiceTest {
                 originSentence = "test sentence",
                 correctedSentence = "Test sentence.",
                 feedback = "테스트 피드백",
-                feedbackType = FeedbackType.SYSTEM
+                feedbackType = FeedbackType.SYSTEM,
+                score = 5
             )
             
-            given(openAiClient.generateCorrectionAndFeedbackWithType("test sentence"))
-                .willReturn(Triple("Test sentence.", "테스트 피드백", "invalid_type"))
+            given(openAiClient.generateCorrectionAndFeedbackWithScore("test sentence"))
+                .willReturn(Quadruple("Test sentence.", "테스트 피드백", "invalid_type", 5))
             given(correctionRepository.save(any()))
                 .willReturn(mockCorrection)
 

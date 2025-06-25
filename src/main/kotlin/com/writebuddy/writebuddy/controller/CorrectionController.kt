@@ -1,15 +1,12 @@
 package com.writebuddy.writebuddy.controller
 
 import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
+import com.writebuddy.writebuddy.controller.dto.request.UpdateMemoRequest
 import com.writebuddy.writebuddy.controller.dto.response.CorrectionResponse
 import com.writebuddy.writebuddy.domain.FeedbackType
 import com.writebuddy.writebuddy.service.CorrectionService
 import jakarta.validation.Valid
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/corrections")
@@ -22,6 +19,12 @@ class CorrectionController(
         val saved = correctionService.save(request)
         return CorrectionResponse.from(saved)
     }
+    
+    @PostMapping("/users/{userId}")
+    fun createWithUser(@PathVariable userId: Long, @RequestBody @Valid request: CorrectionRequest) : CorrectionResponse {
+        val saved = correctionService.save(request, userId)
+        return CorrectionResponse.from(saved)
+    }
 
     @GetMapping
     fun getAll(): List<CorrectionResponse> {
@@ -32,5 +35,46 @@ class CorrectionController(
     @GetMapping("/statistics")
     fun getStatistics(): Map<FeedbackType, Long> {
         return correctionService.getFeedbackTypeStatistics()
+    }
+    
+    @GetMapping("/average-score")
+    fun getAverageScore(): Map<String, Double> {
+        val averageScore = correctionService.getAverageScore()
+        return mapOf("averageScore" to averageScore)
+    }
+    
+    @GetMapping("/dashboard/daily")
+    fun getDailyStatistics(): Map<String, Any> {
+        return correctionService.getDailyStatistics()
+    }
+    
+    @GetMapping("/dashboard/score-trend")
+    fun getScoreTrend(): Map<String, Any> {
+        val trend = correctionService.getScoreTrend()
+        return mapOf("scoreTrend" to trend)
+    }
+    
+    @GetMapping("/dashboard/error-patterns")
+    fun getErrorPatterns(): Map<String, Any> {
+        val patterns = correctionService.getErrorPatternAnalysis()
+        return mapOf("errorPatterns" to patterns)
+    }
+    
+    @PutMapping("/{id}/favorite")
+    fun toggleFavorite(@PathVariable id: Long): CorrectionResponse {
+        val correction = correctionService.toggleFavorite(id)
+        return CorrectionResponse.from(correction)
+    }
+    
+    @GetMapping("/favorites")
+    fun getFavorites(): List<CorrectionResponse> {
+        val favorites = correctionService.getFavorites()
+        return favorites.map { CorrectionResponse.from(it) }
+    }
+    
+    @PutMapping("/{id}/memo")
+    fun updateMemo(@PathVariable id: Long, @RequestBody request: UpdateMemoRequest): CorrectionResponse {
+        val correction = correctionService.updateMemo(id, request.memo)
+        return CorrectionResponse.from(correction)
     }
 }

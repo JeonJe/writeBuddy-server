@@ -16,6 +16,13 @@ class Correction(
     val feedback: String,
     @Enumerated(EnumType.STRING)
     val feedbackType: FeedbackType = FeedbackType.GRAMMAR,
+    val score: Int? = null,
+    var isFavorite: Boolean = false,
+    @Lob
+    var memo: String? = null,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    var user: User? = null,
 ) : BaseEntity()
 
 enum class FeedbackType {

@@ -10,6 +10,9 @@ data class CorrectionResponse(
     val correctedSentence: String,
     val feedback: String,
     val feedbackType: FeedbackType,
+    val score: Int?,
+    val isFavorite: Boolean,
+    val memo: String?,
     val createdAt: LocalDateTime
 ) {
     companion object {
@@ -22,6 +25,9 @@ data class CorrectionResponse(
                 correctedSentence = correction.correctedSentence,
                 feedback = correction.feedback,
                 feedbackType = correction.feedbackType,
+                score = correction.score,
+                isFavorite = correction.isFavorite,
+                memo = correction.memo,
                 createdAt = correction.createdAt ?: LocalDateTime.now()
             )
         }
