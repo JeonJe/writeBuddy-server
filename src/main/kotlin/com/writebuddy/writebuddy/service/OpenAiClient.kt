@@ -92,6 +92,31 @@ class OpenAiClient(
         return Sextuple(origin, promptManager.getCorrectionFallback(), OpenAiResponseParser.FALLBACK_FEEDBACK_TYPE, OpenAiResponseParser.DEFAULT_SCORE, null, null)
     }
     
+    fun sendChatRequest(systemPrompt: String, userPrompt: String): String {
+        return try {
+            logger.info("OpenAI API 요청 전송: {}", userPrompt.take(50))
+            val response = callOpenAiWithCustomPrompts(systemPrompt, userPrompt)
+            response?.choices?.firstOrNull()?.message?.content ?: ""
+        } catch (e: Exception) {
+            logger.error("OpenAI API 호출 실패: {}", e.message)
+            throw e
+        }
+    }
+    
+    private fun callOpenAiWithCustomPrompts(systemPrompt: String, userPrompt: String): ChatCompletionResponse? {
+        val messages = listOf(
+            mapOf("role" to "system", "content" to systemPrompt),
+            mapOf("role" to "user", "content" to userPrompt)
+        )
+        val request = createRequest(messages)
+        
+        return restClient.post()
+            .uri(openAiProperties.api.endpoint)
+            .body(request)
+            .retrieve()
+            .body(ChatCompletionResponse::class.java)
+    }
+    
     @Retryable(
         value = [RestClientException::class],
         maxAttempts = 3, // Will be overridden by @Value at runtime

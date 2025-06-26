@@ -1,84 +1,78 @@
 package com.writebuddy.writebuddy.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.writebuddy.writebuddy.domain.ExampleSourceType
 import com.writebuddy.writebuddy.domain.RealExample
-import com.writebuddy.writebuddy.repository.RealExampleRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
 class RealExampleService(
-    private val realExampleRepository: RealExampleRepository
+    private val openAiClient: OpenAiClient,
+    private val promptManager: PromptManager,
+    private val objectMapper: ObjectMapper
 ) {
     private val logger: Logger = LoggerFactory.getLogger(RealExampleService::class.java)
     
-    fun findExamplesByPhrase(phrase: String): List<RealExample> {
-        logger.debug("구문으로 예시 검색: {}", phrase)
-        return realExampleRepository.findByPhraseContainingIgnoreCase(phrase)
-    }
-    
-    fun searchExamples(keyword: String): List<RealExample> {
-        logger.debug("키워드로 예시 검색: {}", keyword)
-        return realExampleRepository.searchByKeyword(keyword)
-    }
-    
-    fun getRandomExamples(count: Int = 5): List<RealExample> {
-        logger.debug("랜덤 예시 조회: {}개", count)
-        return realExampleRepository.findRandomVerifiedExamples().take(count)
-    }
-    
-    fun getExamplesBySourceType(sourceType: ExampleSourceType): List<RealExample> {
-        logger.debug("출처 타입별 예시 조회: {}", sourceType)
-        return realExampleRepository.findBySourceType(sourceType)
-    }
-    
-    fun getExamplesByDifficulty(minDifficulty: Int, maxDifficulty: Int): List<RealExample> {
-        logger.debug("난이도별 예시 조회: {}-{}", minDifficulty, maxDifficulty)
-        return realExampleRepository.findByDifficultyBetween(minDifficulty, maxDifficulty)
-    }
-    
-    fun getDailyRecommendation(): List<RealExample> {
-        logger.debug("오늘의 추천 예시 조회")
-        // 다양한 소스에서 하나씩 선택해서 균형있게 제공
-        val recommendations = mutableListOf<RealExample>()
-        
-        ExampleSourceType.values().forEach { sourceType ->
-            val examples = realExampleRepository.findBySourceType(sourceType)
-            if (examples.isNotEmpty()) {
-                recommendations.add(examples.random())
-            }
-        }
-        
-        return recommendations.take(5) // 최대 5개
-    }
     
     // 교정된 문장과 관련된 실제 사용 예시 찾기
     fun findRelatedExamples(correctedSentence: String): List<RealExample> {
-        logger.debug("교정된 문장과 관련된 예시 검색: {}", correctedSentence)
+        logger.debug("교정된 문장과 관련된 예시 생성: {}", correctedSentence)
         
-        // 주요 키워드 추출 (간단한 방식)
-        val keywords = extractKeywords(correctedSentence)
-        val allExamples = mutableSetOf<RealExample>()
-        
-        keywords.forEach { keyword ->
-            val examples = realExampleRepository.searchByKeyword(keyword)
-            allExamples.addAll(examples)
+        // OpenAI로 실시간 예시 생성
+        return generateExamplesWithAI(correctedSentence)
+    }
+    
+    private fun generateExamplesWithAI(correctedSentence: String): List<RealExample> {
+        return try {
+            val systemPrompt = promptManager.getExampleGenerationSystemPrompt()
+            val userPrompt = promptManager.getExampleGenerationUserPrompt(correctedSentence)
+            
+            logger.info("OpenAI로 실제 사용 예시 생성 요청: {}", correctedSentence)
+            val response = openAiClient.sendChatRequest(systemPrompt, userPrompt)
+            
+            // JSON 응답 파싱
+            val jsonNode = objectMapper.readTree(response)
+            val examplesNode = jsonNode.get("examples")
+            
+            val examples = mutableListOf<RealExample>()
+            if (examplesNode != null && examplesNode.isArray) {
+                examplesNode.forEach { exampleNode ->
+                    try {
+                        val tagsNode = exampleNode.get("tags")
+                        val tagsString = if (tagsNode != null && tagsNode.isArray) {
+                            tagsNode.map { it.asText() }.joinToString(",")
+                        } else {
+                            ""
+                        }
+                        
+                        val example = RealExample(
+                            phrase = exampleNode.get("phrase")?.asText() ?: "",
+                            source = exampleNode.get("source")?.asText() ?: "",
+                            sourceType = ExampleSourceType.valueOf(exampleNode.get("sourceType")?.asText() ?: "MOVIE"),
+                            context = exampleNode.get("context")?.asText() ?: "",
+                            url = exampleNode.get("url")?.asText(),
+                            timestamp = exampleNode.get("timestamp")?.asText(),
+                            difficulty = exampleNode.get("difficulty")?.asInt() ?: 5,
+                            tags = tagsString,
+                            isVerified = exampleNode.get("isVerified")?.asBoolean() ?: true
+                        )
+                        examples.add(example)
+                    } catch (e: Exception) {
+                        logger.warn("예시 파싱 실패: {}", e.message)
+                    }
+                }
+            }
+            
+            logger.info("OpenAI 예시 생성 완료: {}개", examples.size)
+            examples
+            
+        } catch (e: Exception) {
+            logger.error("OpenAI 예시 생성 실패: {}", e.message)
+            // 실패 시 빈 목록 반환
+            emptyList()
         }
-        
-        return allExamples.take(3) // 최대 3개
     }
     
-    private fun extractKeywords(sentence: String): List<String> {
-        // 간단한 키워드 추출 로직
-        return sentence.split(" ")
-            .filter { it.length > 3 } // 3글자 이상만
-            .filter { !it.matches(Regex("[a-z]+")) } // 관사, 전치사 등 제외
-            .take(3) // 최대 3개 키워드
-    }
-    
-    fun createExample(example: RealExample): RealExample {
-        logger.info("새 예시 생성: {}", example.phrase)
-        return realExampleRepository.save(example)
-    }
 }

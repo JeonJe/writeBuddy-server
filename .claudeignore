@@ -1,0 +1,32 @@
+# 환경 변수 파일
+.env
+.env.local
+.env.development
+.env.production
+
+# API 키와 보안 관련 파일
+*.key
+*.pem
+*.p12
+*.jks
+secrets/
+config/production.yml
+
+# 데이터베이스 관련
+*.db
+*.sqlite
+
+# 로그 파일
+*.log
+logs/
+
+# 캐시 및 임시 파일
+.gradle/
+build/
+target/
+.idea/
+.vscode/
+
+# 백업 파일
+*.bak
+*.backup
