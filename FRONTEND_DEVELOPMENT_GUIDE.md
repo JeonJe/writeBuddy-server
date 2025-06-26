@@ -308,17 +308,83 @@ Content-Type: application/json
 - 단어 차이: "What's the difference between 'fun' and 'funny'?"
 - 문화적 뉘앙스: "Is 'How are you?' always a genuine question?"
 
-### 👤 사용자 관리
+### 🎯 학습 분석 & 개인화
 
-#### 사용자 생성
+#### 사용자 약점 분석
 ```http
-POST /users
-Content-Type: application/json
+GET /analytics/users/{userId}/weak-areas
+```
 
+**응답 예시:**
+```json
 {
-  "username": "john_doe",
-  "email": "john@example.com"
+  "userId": 1,
+  "topWeakAreas": [
+    {
+      "type": "GRAMMAR_ARTICLES",
+      "typeDisplay": "관사 (a, an, the)",
+      "pattern": "관사 누락 또는 잘못된 사용",
+      "frequency": 8,
+      "frequencyDisplay": "8회 실수",
+      "severity": "HIGH",
+      "severityDisplay": "🟠 심각",
+      "severityColor": "#f97316",
+      "improvementRate": 0.3,
+      "improvementRateDisplay": "📈 개선 중",
+      "exampleMistakes": [
+        "I am student → I am a student",
+        "She is teacher → She is a teacher"
+      ],
+      "recommendation": "관사 사용법을 집중적으로 연습해보세요. 가산명사와 불가산명사 구분이 핵심이에요! ⚠️ 빠른 시일 내에 개선이 필요해요."
+    }
+  ],
+  "overallImprovementRate": 0.45,
+  "improvementRateDisplay": "📊 꾸준히 성장 (45%)",
+  "recommendedFocus": "GRAMMAR_ARTICLES",
+  "recommendedFocusDisplay": "관사 (a, an, the)",
+  "totalMistakes": 25,
+  "analysisDate": "2025-06-26T15:30:00",
+  "summary": {
+    "criticalAreas": 0,
+    "highPriorityAreas": 2,
+    "totalWeakAreas": 5,
+    "message": "⚠️ 우선적으로 개선할 영역이 2개 있어요."
+  }
 }
+```
+
+#### 약점 분석 수동 트리거
+```http
+POST /analytics/users/{userId}/analyze
+```
+
+**응답 예시:**
+```json
+{
+  "message": "약점 분석이 완료되었습니다",
+  "userId": "1"
+}
+```
+
+**분석 항목:**
+- 🔴 **관사 (a, an, the)**: 가산명사/불가산명사 구분 실수
+- 🟠 **전치사 (in, on, at)**: 시간/장소 전치사 혼동  
+- 🟡 **시제**: 과거/현재/미래 시제 사용 오류
+- 🟢 **동사 형태**: 주어-동사 일치 문제
+- 📝 **철자 오류**: 자주 틀리는 단어들
+- ✏️ **문체**: 단어 선택 및 문장 구조
+
+### 👤 사용자 관리 및 인증
+
+#### OAuth 로그인 (Google)
+```http
+GET /oauth2/authorization/google
+```
+Google OAuth 로그인 페이지로 리다이렉트됩니다.
+
+#### 현재 사용자 정보 조회
+```http
+GET /auth/user
 ```
 
 **응답 예시:**
@@ -326,10 +392,38 @@ Content-Type: application/json
 {
   "id": 1,
   "username": "john_doe",
-  "email": "john@example.com",
+  "email": "john@gmail.com",
+  "oauthProvider": "google",
+  "oauthProviderId": "google_user_id_123",
+  "profileImageUrl": "https://lh3.googleusercontent.com/...",
   "createdAt": "2025-06-25T20:00:00"
 }
 ```
+
+#### 인증 상태 확인
+```http
+GET /auth/status
+```
+
+**응답 예시:**
+```json
+{
+  "authenticated": true,
+  "user": {
+    "name": "John Doe",
+    "email": "john@gmail.com",
+    "picture": "https://lh3.googleusercontent.com/..."
+  }
+}
+```
+
+#### 로그아웃
+```http
+POST /logout
+```
+
+#### 사용자 생성 (OAuth 자동 등록)
+OAuth 로그인 시 사용자가 자동으로 생성됩니다.
 
 #### 전체 사용자 목록
 ```http
@@ -386,6 +480,9 @@ interface User {
   id: number;
   username: string;
   email: string;
+  oauthProvider?: string;     // OAuth 제공자 (google 등)
+  oauthProviderId?: string;   // OAuth 제공자의 사용자 ID
+  profileImageUrl?: string;   // 프로필 이미지 URL
   createdAt: string;
 }
 ```
@@ -532,15 +629,20 @@ enum ExampleSourceType {
 - [ ] 즐겨찾기 토글 기능
 - [ ] 교정 목록 페이지
 - [ ] **영어 학습 채팅 기능** (자유 질문 및 답변)
+- [ ] **개인화된 약점 분석** (사용자별 실수 패턴 분석)
 
 ### 2단계: 대시보드
 - [ ] 일별 통계 카드
 - [ ] 점수 트렌드 차트
 - [ ] 피드백 타입별 분포 차트
 - [ ] 오류 패턴 분석 페이지
+- [ ] **약점 분석 대시보드** (심각도별 색상 구분, 개선율 표시)
+- [ ] **맞춤형 학습 추천** (약점 기반 학습 가이드)
 
-### 3단계: 사용자 시스템
-- [ ] 사용자 등록/로그인
+### 3단계: 사용자 시스템 ✅ (OAuth 구현 완료)
+- [x] **Google OAuth 로그인** 
+- [x] 사용자 인증 및 세션 관리
+- [x] OAuth 사용자 정보 자동 등록
 - [ ] 개인 통계 대시보드
 - [ ] 사용자별 교정 기록 관리
 
@@ -553,6 +655,15 @@ enum ExampleSourceType {
 - [ ] 성취 뱃지 시스템
 
 ## 🔧 기술적 고려사항
+
+### OAuth 설정
+Google Cloud Console에서 OAuth 클라이언트 설정 필요:
+1. **Authorized redirect URIs**: `http://localhost:7071/login/oauth2/code/google`
+2. **환경변수 설정**:
+   ```bash
+   export GOOGLE_CLIENT_ID="your-google-client-id"
+   export GOOGLE_CLIENT_SECRET="your-google-client-secret"
+   ```
 
 ### 환경별 설정 관리
 프로젝트는 환경별로 다른 설정을 사용합니다:

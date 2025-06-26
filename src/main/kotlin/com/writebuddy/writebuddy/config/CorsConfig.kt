@@ -13,12 +13,11 @@ class CorsConfig {
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
         
-        // 허용할 Origin 설정 (웹 서버용)
+        // 허용할 Origin 설정 (웹 서버 + OAuth 리다이렉션용)
         configuration.allowedOriginPatterns = listOf(
-            "http://localhost:7070",  // 웹 서버
-            "http://localhost:7071",  // 추가 웹 서버
-            "http://127.0.0.1:7070",
-            "http://127.0.0.1:7071"
+            "http://localhost:*",     // 모든 로컬호스트 포트
+            "http://127.0.0.1:*",     // 모든 127.0.0.1 포트
+            "https://accounts.google.com"  // Google OAuth
         )
         
         // 허용할 HTTP 메서드
