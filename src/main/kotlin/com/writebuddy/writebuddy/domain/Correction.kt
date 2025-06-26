@@ -23,7 +23,7 @@ class Correction(
     @Lob
     val originTranslation: String? = null,
     @Lob
-    val feedbackTranslation: String? = null,
+    val correctedTranslation: String? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     var user: User? = null,

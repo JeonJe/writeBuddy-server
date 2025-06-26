@@ -23,7 +23,7 @@ class CorrectionService (
     fun save(request: CorrectionRequest, userId: Long?): Correction {
         logger.info("교정 요청 처리 시작: {}, userId: {}", request.originSentence, userId)
         
-        val (corrected, feedback, feedbackTypeStr, score, originTranslation, feedbackTranslation) = 
+        val (corrected, feedback, feedbackTypeStr, score, originTranslation, correctedTranslation) = 
             openAiClient.generateCorrectionWithTranslations(request.originSentence)
         val feedbackType = parseFeedbackType(feedbackTypeStr)
 
@@ -34,7 +34,7 @@ class CorrectionService (
             feedbackType = feedbackType,
             score = score,
             originTranslation = originTranslation,
-            feedbackTranslation = feedbackTranslation
+            correctedTranslation = correctedTranslation
         )
         
         // Associate with user if userId is provided

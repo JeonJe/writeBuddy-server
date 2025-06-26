@@ -8,16 +8,33 @@
 - **API 스타일**: REST API with JSON
 - **개발 서버**: `http://localhost:7071`
 
+### 🏗️ 백엔드 아키텍처 (2025-06-26 업데이트)
+
+**모듈 구조**:
+- **OpenAiClient**: AI API 통신 담당
+- **OpenAiResponseParser**: AI 응답 파싱 및 데이터 변환
+- **PromptManager**: AI 프롬프트 중앙 관리 (후드 스타일 피드백 포함)
+- **OpenAiProperties**: 환경별 설정 관리 (로컬/운영 분리)
+
+**피드백 스타일**: 재미있고 친근한 후드 톤 ("야", "진짜", "개", "ㅇㅈ", "ㄹㅇ" 등)
+
+**환경 설정**:
+- `application-local.properties`: 개발용 (빠른 재시도, 디버그 로깅)
+- `application-prod.properties`: 운영용 (안정적 재시도, 최소 로깅)
+
 ## 🎯 핵심 기능
 
 ### ⭐ 주요 특징
 1. **AI 문법 교정**: OpenAI 기반 실시간 교정
 2. **점수 시스템**: 1-10점 품질 평가
-3. **실제 사용 예시**: 영화, 가사, 기사 등에서 교정된 표현의 실제 사용 사례 제공
-4. **학습 대시보드**: 통계 및 진도 추적
-5. **즐겨찾기**: 중요한 교정 결과 북마크
-6. **개인 노트**: 학습 메모 기능
-7. **사용자 시스템**: 개인별 진도 관리
+3. **번역 기능**: 원문과 교정문의 한국어 번역 자동 제공
+4. **후드 스타일 피드백**: 재미있고 친근한 톤으로 설명 ("야 이거 완전 기본기야!")
+5. **영어 학습 채팅**: 문법/표현/문화 질문에 대한 자유로운 AI 채팅
+6. **실제 사용 예시**: 영화, 가사, 기사 등에서 교정된 표현의 실제 사용 사례 제공
+7. **학습 대시보드**: 통계 및 진도 추적
+8. **즐겨찾기**: 중요한 교정 결과 북마크
+9. **개인 노트**: 학습 메모 기능
+10. **사용자 시스템**: 개인별 진도 관리
 
 ## 🔌 API 엔드포인트
 
@@ -39,14 +56,14 @@ Content-Type: application/json
   "id": 1,
   "originSentence": "How Can I enjoy new features in this project?",
   "correctedSentence": "How can I enjoy the new features in this project?",
-  "feedback": "소문자로 시작하고 정관사 'the'를 추가해야 합니다.",
+  "feedback": "야 이거 완전 기본기야! 대문자로 시작하는 건 문장 맨 처음이나 고유명사일 때만이고, 'the'는 특정한 것을 가리킬 때 꼭 써줘야 해. 'new features'라고 하면 어떤 기능들인지 명확하게 해주는 거야!",
   "feedbackType": "GRAMMAR",
   "score": 7,
   "isFavorite": false,
   "memo": null,
   "createdAt": "2025-06-25T21:30:00",
   "originTranslation": "이 프로젝트의 새로운 기능들을 어떻게 즐길 수 있을까요?",
-  "feedbackTranslation": "Start with lowercase and add the definite article 'the'.",
+  "correctedTranslation": "이 프로젝트의 새로운 기능들을 어떻게 즐길 수 있을까요?",
   "relatedExamples": [
     {
       "id": 1,
@@ -280,7 +297,7 @@ Content-Type: application/json
 ```json
 {
   "question": "What's the difference between 'see', 'look', and 'watch'?",
-  "answer": "'See'는 의도하지 않고 자연스럽게 보는 것, 'look'은 의도적으로 시선을 향하는 것, 'watch'는 움직이는 것을 지속적으로 관찰하는 것을 의미합니다. 예를 들어 'I saw a bird'(새를 봤다), 'Look at me'(나를 봐), 'Watch TV'(TV를 보다)처럼 사용합니다.",
+  "answer": "야 이거 진짜 좋은 질문이야! 한국인들이 개 많이 헷갈려하는 부분인데 ㅋㅋ 'See'는 그냥 자연스럽게 시야에 들어오는 거, 'look'은 의도적으로 시선을 확 돌리는 거, 'watch'는 움직이는 걸 쭉~ 지켜보는 거야. 예시로 'I saw a bird'(어? 새다!), 'Look at me'(나 좀 봐봐), 'Watch TV'(TV 정주행 ㄱㄱ) 이런 식으로 쓰는 거지!",
   "createdAt": "2025-06-26T10:30:00"
 }
 ```
@@ -358,7 +375,7 @@ interface Correction {
   memo: string | null;
   createdAt: string;     // ISO 8601 format
   originTranslation: string | null;    // 원문의 한국어 번역
-  feedbackTranslation: string | null;  // 피드백의 영어 번역
+  correctedTranslation: string | null; // 교정문의 한국어 번역
   relatedExamples: RealExample[];  // 관련 실제 사용 예시
 }
 ```
@@ -510,7 +527,7 @@ enum ExampleSourceType {
 ### 1단계: MVP (핵심 기능)
 - [ ] 기본 교정 입력/출력 화면
 - [ ] 점수 표시 (색상 코딩)
-- [ ] **번역 기능 표시** (원문/피드백 번역 제공)
+- [ ] **번역 기능 표시** (원문/교정문 번역 제공)
 - [ ] **실제 사용 예시 표시** (교정 결과와 함께 자동 제공)
 - [ ] 즐겨찾기 토글 기능
 - [ ] 교정 목록 페이지
@@ -536,6 +553,25 @@ enum ExampleSourceType {
 - [ ] 성취 뱃지 시스템
 
 ## 🔧 기술적 고려사항
+
+### 환경별 설정 관리
+프로젝트는 환경별로 다른 설정을 사용합니다:
+
+**로컬 개발 환경** (`spring.profiles.active=local`):
+```properties
+# 개발용 빠른 설정
+openai.retry.max-attempts=2
+openai.retry.delay=500
+logging.level.com.writebuddy=DEBUG
+```
+
+**운영 환경** (`spring.profiles.active=prod`):
+```properties
+# 운영용 안정적 설정
+openai.retry.max-attempts=5
+openai.retry.delay=2000
+logging.level.com.writebuddy=INFO
+```
 
 ### HTTP 상태 코드
 - `200`: 성공
