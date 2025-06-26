@@ -15,12 +15,10 @@ class CorsConfig {
         
         // 허용할 Origin 설정 (웹 서버용)
         configuration.allowedOriginPatterns = listOf(
-            "http://localhost:8080",  // 웹 서버
-            "http://localhost:9090",  // 추가 웹 서버
-            "http://localhost:9091",  // 백엔드 서버
-            "http://127.0.0.1:8080",
-            "http://127.0.0.1:9090", 
-            "http://127.0.0.1:9091"
+            "http://localhost:7070",  // 웹 서버
+            "http://localhost:7071",  // 추가 웹 서버
+            "http://127.0.0.1:7070",
+            "http://127.0.0.1:7071"
         )
         
         // 허용할 HTTP 메서드

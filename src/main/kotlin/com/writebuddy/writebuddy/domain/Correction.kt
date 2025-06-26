@@ -20,6 +20,10 @@ class Correction(
     var isFavorite: Boolean = false,
     @Lob
     var memo: String? = null,
+    @Lob
+    val originTranslation: String? = null,
+    @Lob
+    val feedbackTranslation: String? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     var user: User? = null,

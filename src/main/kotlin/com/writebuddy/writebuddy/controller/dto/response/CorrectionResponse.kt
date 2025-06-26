@@ -15,6 +15,8 @@ data class CorrectionResponse(
     val isFavorite: Boolean,
     val memo: String?,
     val createdAt: LocalDateTime,
+    val originTranslation: String?,
+    val feedbackTranslation: String?,
     val relatedExamples: List<RealExampleResponse> = emptyList()
 ) {
     companion object {
@@ -32,6 +34,8 @@ data class CorrectionResponse(
                 isFavorite = correction.isFavorite,
                 memo = correction.memo,
                 createdAt = correction.createdAt ?: LocalDateTime.now(),
+                originTranslation = correction.originTranslation,
+                feedbackTranslation = correction.feedbackTranslation,
                 relatedExamples = examples.map { RealExampleResponse.from(it) }
             )
         }

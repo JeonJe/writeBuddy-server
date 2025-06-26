@@ -6,7 +6,7 @@
 - **백엔드**: Spring Boot + Kotlin
 - **데이터베이스**: H2 (개발용) + JPA/Hibernate
 - **API 스타일**: REST API with JSON
-- **개발 서버**: `http://localhost:9091`
+- **개발 서버**: `http://localhost:7071`
 
 ## 🎯 핵심 기능
 
@@ -25,7 +25,7 @@
 
 #### 기본 교정 요청
 ```http
-POST http://localhost:9091/corrections
+POST http://localhost:7071/corrections
 Content-Type: application/json
 
 {
@@ -45,6 +45,8 @@ Content-Type: application/json
   "isFavorite": false,
   "memo": null,
   "createdAt": "2025-06-25T21:30:00",
+  "originTranslation": "이 프로젝트의 새로운 기능들을 어떻게 즐길 수 있을까요?",
+  "feedbackTranslation": "Start with lowercase and add the definite article 'the'.",
   "relatedExamples": [
     {
       "id": 1,
@@ -262,6 +264,33 @@ Content-Type: application/json
 }
 ```
 
+### 💬 영어 학습 채팅
+
+#### 자유 질문 채팅
+```http
+POST /chat
+Content-Type: application/json
+
+{
+  "question": "What's the difference between 'see', 'look', and 'watch'?"
+}
+```
+
+**응답 예시:**
+```json
+{
+  "question": "What's the difference between 'see', 'look', and 'watch'?",
+  "answer": "'See'는 의도하지 않고 자연스럽게 보는 것, 'look'은 의도적으로 시선을 향하는 것, 'watch'는 움직이는 것을 지속적으로 관찰하는 것을 의미합니다. 예를 들어 'I saw a bird'(새를 봤다), 'Look at me'(나를 봐), 'Watch TV'(TV를 보다)처럼 사용합니다.",
+  "createdAt": "2025-06-26T10:30:00"
+}
+```
+
+**사용 예시:**
+- 문법 질문: "When should I use 'a' vs 'an'?"
+- 표현 질문: "How to politely decline an invitation?"
+- 단어 차이: "What's the difference between 'fun' and 'funny'?"
+- 문화적 뉘앙스: "Is 'How are you?' always a genuine question?"
+
 ### 👤 사용자 관리
 
 #### 사용자 생성
@@ -328,6 +357,8 @@ interface Correction {
   isFavorite: boolean;
   memo: string | null;
   createdAt: string;     // ISO 8601 format
+  originTranslation: string | null;    // 원문의 한국어 번역
+  feedbackTranslation: string | null;  // 피드백의 영어 번역
   relatedExamples: RealExample[];  // 관련 실제 사용 예시
 }
 ```
@@ -339,6 +370,15 @@ interface User {
   username: string;
   email: string;
   createdAt: string;
+}
+```
+
+### 채팅 응답 (ChatResponse)
+```typescript
+interface ChatResponse {
+  question: string;        // 사용자 질문
+  answer: string;         // AI 답변
+  createdAt: string;      // 응답 생성 시간
 }
 ```
 
@@ -470,9 +510,11 @@ enum ExampleSourceType {
 ### 1단계: MVP (핵심 기능)
 - [ ] 기본 교정 입력/출력 화면
 - [ ] 점수 표시 (색상 코딩)
+- [ ] **번역 기능 표시** (원문/피드백 번역 제공)
 - [ ] **실제 사용 예시 표시** (교정 결과와 함께 자동 제공)
 - [ ] 즐겨찾기 토글 기능
 - [ ] 교정 목록 페이지
+- [ ] **영어 학습 채팅 기능** (자유 질문 및 답변)
 
 ### 2단계: 대시보드
 - [ ] 일별 통계 카드

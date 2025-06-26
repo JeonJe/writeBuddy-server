@@ -94,6 +94,22 @@
 
 ## ✅ 완료된 작업
 
+### 🎉 Week 3 추가 완료 (2025-06-26) - 번역 & 채팅 기능!
+- [x] **🌐 번역 기능 구현**
+  - [x] Correction 엔티티에 originTranslation, feedbackTranslation 필드 추가
+  - [x] OpenAI 프롬프트에 번역 요청 추가
+  - [x] Sextuple 데이터 구조로 6개 값 반환 지원
+  - [x] 모든 교정 API에 번역 기능 자동 포함
+- [x] **💬 영어 학습 채팅 시스템 구현**
+  - [x] ChatController 생성 (POST /chat 엔드포인트)
+  - [x] ChatRequest/ChatResponse DTO 설계
+  - [x] OpenAiClient에 generateChatResponse 메서드 추가
+  - [x] 영어 학습 전용 시스템 프롬프트 최적화
+- [x] **📋 문서화 업데이트**
+  - [x] FRONTEND_DEVELOPMENT_GUIDE.md에 새 기능 문서화
+  - [x] 번역 필드 포함한 API 응답 예시 업데이트
+  - [x] 채팅 API 사용법 및 데이터 모델 추가
+
 ### 🎉 Week 2 완료 (2025-06-25) - 재미있는 기능 완성!
 - [x] **⭐ 피드백 점수 시스템 구현**
   - [x] Correction 엔티티 score 필드 추가 (1-10점)

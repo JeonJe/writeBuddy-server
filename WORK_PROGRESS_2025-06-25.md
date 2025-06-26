@@ -197,7 +197,7 @@ POST /examples                              # 새 예시 추가
 - **데이터베이스**: H2 (개발), JPA/Hibernate
 - **API**: REST + JSON
 - **테스트**: JUnit 5, AssertJ, Mockito
-- **포트**: 9091
+- **포트**: 7071
 
 ### ✅ **외부 서비스 (연동 완료)**
 - **AI**: OpenAI API (문법 교정 + 점수 평가)
@@ -240,7 +240,7 @@ POST /examples                              # 새 예시 추가
 3. **애플리케이션 실행 테스트**
    ```bash
    ./gradlew bootRun
-   # http://localhost:9091 에서 확인
+   # http://localhost:7071 에서 확인
    ```
 
 ### 🎯 **핵심 명령어**
