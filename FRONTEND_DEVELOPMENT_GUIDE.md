@@ -18,6 +18,8 @@
 - **로깅 개선**: API 호출 시간 측정 및 상세 로그 추가
 - **API 안정성**: 환경변수 설정 및 401 인증 오류 해결
 - **신뢰도 향상**: 외부 URL/타임스탬프 제거로 서비스 신뢰성 강화
+- **통계 개선**: 10점 만점 문장을 실수 통계에서 제외, '잘한 표현'으로 별도 분류
+- **새 API**: `/corrections/users/{userId}/good-expressions` 엔드포인트 추가
 
 **이전 변경사항 (2025-06-26)**:
 - **AI 기반 예시 생성**: 하드코딩된 샘플 데이터 → OpenAI 실시간 생성
@@ -235,6 +237,32 @@ Content-Type: application/json
 {
   "memo": "Remember: always use articles with countable nouns"
 }
+```
+
+#### 사용자별 잘한 표현 조회 (10점 만점 문장들)
+```http
+GET /corrections/users/{userId}/good-expressions
+```
+
+**설명:** 해당 사용자의 최근 3개월간 10점 만점을 받은 문장들을 조회합니다. 실수 통계에서는 제외되며, 잘한 표현으로 별도 관리됩니다.
+
+**응답 예시:**
+```json
+[
+  {
+    "id": 15,
+    "originSentence": "I have been studying English for two years.",
+    "correctedSentence": "I have been studying English for two years.",
+    "feedback": "완벽한 현재완료 진행형이야! 🎉 전혀 고칠 게 없는 완벽한 문장이네!",
+    "feedbackType": "GRAMMAR",
+    "score": 10,
+    "isFavorite": false,
+    "memo": null,
+    "createdAt": "2025-06-27T12:00:00",
+    "originTranslation": "나는 2년 동안 영어를 공부해왔습니다.",
+    "correctedTranslation": "나는 2년 동안 영어를 공부해왔습니다."
+  }
+]
 ```
 
 ### 🎬 실제 사용 예시 API

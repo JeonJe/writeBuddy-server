@@ -6,6 +6,7 @@ import com.writebuddy.writebuddy.controller.dto.response.CorrectionResponse
 import com.writebuddy.writebuddy.domain.FeedbackType
 import com.writebuddy.writebuddy.service.CorrectionService
 import com.writebuddy.writebuddy.service.RealExampleService
+import com.writebuddy.writebuddy.service.LearningAnalyticsService
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 
@@ -13,7 +14,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/corrections")
 class CorrectionController(
     private val correctionService: CorrectionService,
-    private val realExampleService: RealExampleService
+    private val realExampleService: RealExampleService,
+    private val learningAnalyticsService: LearningAnalyticsService
 ) {
 
     @PostMapping()
@@ -78,6 +80,12 @@ class CorrectionController(
     fun updateMemo(@PathVariable id: Long, @RequestBody request: UpdateMemoRequest): CorrectionResponse {
         val correction = correctionService.updateMemo(id, request.memo)
         return CorrectionResponse.from(correction)
+    }
+    
+    @GetMapping("/users/{userId}/good-expressions")
+    fun getUserGoodExpressions(@PathVariable userId: Long): List<CorrectionResponse> {
+        val goodExpressions = learningAnalyticsService.getUserGoodExpressions(userId)
+        return goodExpressions.map { CorrectionResponse.from(it) }
     }
     
 }

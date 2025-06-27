@@ -102,7 +102,7 @@ data class WeakAreaInfoResponse(
                 typeDisplay = info.typeDisplay,
                 pattern = info.pattern,
                 frequency = info.frequency,
-                frequencyDisplay = "${info.frequency}회 실수",
+                frequencyDisplay = "${info.frequency}회 개선 기회",
                 severity = info.severity.name,
                 severityDisplay = getSeverityDisplayName(info.severity),
                 severityColor = getSeverityColor(info.severity),

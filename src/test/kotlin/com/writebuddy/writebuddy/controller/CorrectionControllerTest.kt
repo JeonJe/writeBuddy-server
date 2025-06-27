@@ -5,6 +5,7 @@ import com.writebuddy.writebuddy.domain.Correction
 import com.writebuddy.writebuddy.domain.RealExample
 import com.writebuddy.writebuddy.service.CorrectionService
 import com.writebuddy.writebuddy.service.RealExampleService
+import com.writebuddy.writebuddy.service.LearningAnalyticsService
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -33,6 +34,9 @@ class CorrectionControllerTest {
     
     @MockitoBean
     private lateinit var realExampleService: RealExampleService
+    
+    @MockitoBean
+    private lateinit var learningAnalyticsService: LearningAnalyticsService
 
     @Nested
     @DisplayName("교정 저장 API")

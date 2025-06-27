@@ -58,7 +58,10 @@ class LearningAnalyticsService(
     private fun detectWeakPatterns(corrections: List<Correction>): Map<WeakAreaType, PatternInfo> {
         val patterns = mutableMapOf<WeakAreaType, PatternInfo>()
         
-        corrections.forEach { correction ->
+        // 10점 만점 문장들은 실수가 아니므로 제외
+        val correctionsWithMistakes = corrections.filter { it.score != 10 }
+        
+        correctionsWithMistakes.forEach { correction ->
             val detectedTypes = analyzeCorrection(correction)
             detectedTypes.forEach { (type, pattern, example) ->
                 val existing = patterns[type] ?: PatternInfo(pattern, 0, mutableListOf())
@@ -319,6 +322,20 @@ class LearningAnalyticsService(
         }
         
         return baseMessage + urgency
+    }
+    
+    fun getUserGoodExpressions(userId: Long): List<Correction> {
+        logger.info("사용자 잘한 표현 조회 시작: userId={}", userId)
+        
+        // 최근 3개월간의 10점 만점 문장들 조회
+        val perfectScoreCorrections = correctionRepository.findByUserIdAndCreatedAtAfter(
+            userId, 
+            LocalDateTime.now().minusMonths(3)
+        ).filter { it.score == 10 }
+        
+        logger.info("잘한 표현 조회 완료: userId={}, 개수={}", userId, perfectScoreCorrections.size)
+        
+        return perfectScoreCorrections.sortedByDescending { it.createdAt }
     }
     
     private fun createEmptyAnalysis(userId: Long): UserWeakAreasSummary {
