@@ -17,6 +17,7 @@
 - **응답 시간 개선**: 약 15% 성능 향상 (12초 → 10.6초)
 - **로깅 개선**: API 호출 시간 측정 및 상세 로그 추가
 - **API 안정성**: 환경변수 설정 및 401 인증 오류 해결
+- **신뢰도 향상**: 외부 URL/타임스탬프 제거로 서비스 신뢰성 강화
 
 **이전 변경사항 (2025-06-26)**:
 - **AI 기반 예시 생성**: 하드코딩된 샘플 데이터 → OpenAI 실시간 생성
@@ -533,8 +534,8 @@ interface RealExample {
   sourceTypeDisplay: string;         // 출처 타입 표시명
   sourceTypeEmoji: string;           // 출처 타입 이모지
   context: string;                   // 사용된 맥락/상황 설명
-  url?: string;                      // 관련 링크 (YouTube, 기사 등)
-  timestamp?: string;                // 영상의 경우 타임스탬프
+  url?: string | null;               // 관련 링크 (신뢰도 향상을 위해 null 권장)
+  timestamp?: string | null;         // 영상 타임스탬프 (신뢰도 향상을 위해 null 권장)
   difficulty: number;                // 1-10 난이도
   tags: string[];                    // 검색용 태그 배열
   isVerified: boolean;               // 검증된 예시인지 여부
@@ -550,7 +551,8 @@ enum ExampleSourceType {
   INTERVIEW = "INTERVIEW", // 인터뷰 🎤
   SOCIAL = "SOCIAL",      // 소셜미디어 📱
   SPEECH = "SPEECH",      // 연설/강연 🎙️
-  PODCAST = "PODCAST"     // 팟캐스트 🎧
+  PODCAST = "PODCAST",    // 팟캐스트 🎧
+  OTHER = "OTHER"         // 기타 📄
 }
 ```
 
@@ -791,10 +793,10 @@ logging.level.com.writebuddy=INFO
 - 7-8: 🟠 중상급 (Upper-Intermediate)
 - 9-10: 🔴 고급 (Advanced)
 
-### 인터랙션
+### 인터랙션 (2025-06-27 업데이트)
 - 클릭 시 상세 모달 표시
-- URL 있는 경우 "원본 보기" 버튼
-- 타임스탬프 있는 경우 직접 재생
 - 태그 클릭 시 관련 예시 검색
+- 출처와 맥락 정보 중심의 학습 경험 제공
+- **신뢰도 개선**: 외부 URL 제거로 안정적인 예시 제공
 
 이 가이드를 참고하여 사용자 친화적이고 효과적인 영어 학습 도구를 개발하세요! 🚀

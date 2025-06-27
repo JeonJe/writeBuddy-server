@@ -2,6 +2,7 @@ package com.writebuddy.writebuddy.controller
 
 import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
 import com.writebuddy.writebuddy.domain.Correction
+import com.writebuddy.writebuddy.domain.RealExample
 import com.writebuddy.writebuddy.service.CorrectionService
 import com.writebuddy.writebuddy.service.RealExampleService
 import org.junit.jupiter.api.DisplayName
@@ -43,9 +44,9 @@ class CorrectionControllerTest {
         fun save_successScenario() {
             val request = CorrectionRequest("hello world")
             val saved = Correction(1L, request.originSentence, "Hello, world!", "대문자로 시작해야 합니다.")
+            val examples = emptyList<RealExample>()
 
-            given(correctionService.save(request)).willReturn(saved)
-            given(realExampleService.findRelatedExamples("Hello, world!")).willReturn(emptyList())
+            given(correctionService.saveWithExamples(request, null)).willReturn(Pair(saved, examples))
 
             val json = """
             {

@@ -89,8 +89,8 @@ class OpenAiResponseParser(
                             source = exampleNode.get("source")?.asText() ?: "",
                             sourceType = ExampleSourceType.valueOf(exampleNode.get("sourceType")?.asText() ?: "OTHER"),
                             context = exampleNode.get("context")?.asText() ?: "",
-                            url = exampleNode.get("url")?.asText(),
-                            timestamp = exampleNode.get("timestamp")?.asText(),
+                            url = null,  // URL 제거로 신뢰도 향상
+                            timestamp = null,  // 타임스탬프 제거로 신뢰도 향상
                             difficulty = exampleNode.get("difficulty")?.asInt() ?: 5,
                             tags = exampleNode.get("tags")?.joinToString(",") { it.asText() },
                             isVerified = exampleNode.get("isVerified")?.asBoolean() ?: true

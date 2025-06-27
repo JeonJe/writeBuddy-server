@@ -23,8 +23,6 @@ class PromptManager {
       "source": "출처명 (영화제목, 뉴스매체, 책제목 등)",
       "sourceType": "MOVIE|SONG|NEWS|BOOK|INTERVIEW|SOCIAL|SPEECH|PODCAST",
       "context": "해당 표현이 사용된 상황이나 맥락에 대한 자세한 설명",
-      "url": "관련 링크 (예시 URL 가능)",
-      "timestamp": "영상의 경우 타임스탬프 (예: 05:23)",
       "difficulty": 1-10 사이의 난이도,
       "tags": ["태그1", "태그2", "태그3"],
       "isVerified": true
@@ -82,8 +80,6 @@ class PromptManager {
       "source": "출처명 (영화제목, 뉴스매체, 책제목 등)",
       "sourceType": "MOVIE|SONG|NEWS|BOOK|INTERVIEW|SOCIAL|SPEECH|PODCAST 중 하나",
       "context": "해당 표현이 사용된 상황이나 맥락에 대한 자세한 설명",
-      "url": "관련 링크 (YouTube, 기사 등) - 실제가 아닌 예시 URL도 괜찮음",
-      "timestamp": "영상의 경우 타임스탬프 (예: 05:23)",
       "difficulty": 1-10 사이의 난이도,
       "tags": ["태그1", "태그2", "태그3"],
       "isVerified": true

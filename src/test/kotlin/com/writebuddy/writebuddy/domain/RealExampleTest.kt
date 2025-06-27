@@ -175,13 +175,24 @@ class RealExampleTest {
         }
 
         @Test
+        @DisplayName("기타 출처 타입의 표시명과 이모지를 확인한다")
+        fun otherSourceTypeDisplayAndEmoji() {
+            // given & when
+            val sourceType = ExampleSourceType.OTHER
+
+            // then
+            assertThat(sourceType.displayName).isEqualTo("기타")
+            assertThat(sourceType.emoji).isEqualTo("📄")
+        }
+
+        @Test
         @DisplayName("모든 출처 타입이 정의되어 있다")
         fun allSourceTypesAreDefined() {
             // given & when
             val sourceTypes = ExampleSourceType.values()
 
             // then
-            assertThat(sourceTypes).hasSize(8)
+            assertThat(sourceTypes).hasSize(9)
             assertThat(sourceTypes).containsExactlyInAnyOrder(
                 ExampleSourceType.MOVIE,
                 ExampleSourceType.SONG,
@@ -190,7 +201,8 @@ class RealExampleTest {
                 ExampleSourceType.INTERVIEW,
                 ExampleSourceType.SOCIAL,
                 ExampleSourceType.SPEECH,
-                ExampleSourceType.PODCAST
+                ExampleSourceType.PODCAST,
+                ExampleSourceType.OTHER
             )
         }
     }
