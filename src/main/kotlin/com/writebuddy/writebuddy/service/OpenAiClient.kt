@@ -1,6 +1,7 @@
 package com.writebuddy.writebuddy.service
 
 import com.writebuddy.writebuddy.config.OpenAiProperties
+import com.writebuddy.writebuddy.domain.RealExample
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.retry.annotation.Backoff
@@ -50,9 +51,17 @@ class OpenAiClient(
             
             val response = callOpenAiApi(origin)
             val content = response?.choices?.firstOrNull()?.message?.content ?: ""
-            logger.info("OpenAI response received: {}", content)
+            logger.info("OpenAI response received: {}", content.take(200))
             
-            responseParser.parseResponseWithTranslations(content)
+            // 새로운 통합 파싱 시도
+            val (correctionData, _, success) = responseParser.parseIntegratedResponse(content)
+            if (success) {
+                logger.info("통합 JSON 응답 파싱 성공")
+                correctionData
+            } else {
+                logger.info("통합 JSON 파싱 실패, 기존 방식으로 파싱")
+                responseParser.parseResponseWithTranslations(content)
+            }
             
         } catch (e: Exception) {
             logger.error("Error calling OpenAI API: {}", e.message, e)
@@ -60,15 +69,44 @@ class OpenAiClient(
         }
     }
     
+    // 교정과 예시를 함께 생성하는 새로운 메서드
+    fun generateCorrectionWithExamples(origin: String): Triple<Sextuple<String, String, String, Int, String?, String?>, List<RealExample>, Boolean> {
+        return try {
+            logger.info("Requesting OpenAI correction with examples for: {}", origin)
+            
+            val response = callOpenAiApi(origin)
+            val content = response?.choices?.firstOrNull()?.message?.content ?: ""
+            logger.info("OpenAI response received: {}", content.take(200))
+            
+            responseParser.parseIntegratedResponse(content)
+            
+        } catch (e: Exception) {
+            logger.error("Error calling OpenAI API: {}", e.message, e)
+            val fallbackCorrection = getFallbackResponseWithTranslations(origin)
+            Triple(fallbackCorrection, emptyList(), false)
+        }
+    }
+    
     private fun callOpenAiApi(origin: String): ChatCompletionResponse? {
         val messages = createMessages(origin)
         val request = createRequest(messages)
         
-        return restClient.post()
-            .uri(openAiProperties.api.endpoint)
-            .body(request)
-            .retrieve()
-            .body(ChatCompletionResponse::class.java)
+        val startTime = System.currentTimeMillis()
+        return try {
+            val response = restClient.post()
+                .uri(openAiProperties.api.endpoint)
+                .body(request)
+                .retrieve()
+                .body(ChatCompletionResponse::class.java)
+            
+            val endTime = System.currentTimeMillis()
+            logger.info("OpenAI API 호출 완료: {}ms", endTime - startTime)
+            response
+        } catch (e: Exception) {
+            val endTime = System.currentTimeMillis()
+            logger.error("OpenAI API 호출 실패: {}ms, 오류: {}", endTime - startTime, e.message)
+            throw e
+        }
     }
     
     private fun createMessages(origin: String): List<Map<String, String>> {

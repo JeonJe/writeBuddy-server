@@ -3,7 +3,6 @@ package com.writebuddy.writebuddy.controller
 import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
 import com.writebuddy.writebuddy.controller.dto.request.UpdateMemoRequest
 import com.writebuddy.writebuddy.controller.dto.response.CorrectionResponse
-import com.writebuddy.writebuddy.controller.dto.response.RealExampleResponse
 import com.writebuddy.writebuddy.domain.FeedbackType
 import com.writebuddy.writebuddy.service.CorrectionService
 import com.writebuddy.writebuddy.service.RealExampleService
@@ -19,15 +18,13 @@ class CorrectionController(
 
     @PostMapping()
     fun create(@RequestBody @Valid request: CorrectionRequest) : CorrectionResponse {
-        val saved = correctionService.save(request)
-        val examples = realExampleService.findRelatedExamples(saved.correctedSentence)
+        val (saved, examples) = correctionService.saveWithExamples(request, null)
         return CorrectionResponse.from(saved, examples)
     }
     
     @PostMapping("/users/{userId}")
     fun createWithUser(@PathVariable userId: Long, @RequestBody @Valid request: CorrectionRequest) : CorrectionResponse {
-        val saved = correctionService.save(request, userId)
-        val examples = realExampleService.findRelatedExamples(saved.correctedSentence)
+        val (saved, examples) = correctionService.saveWithExamples(request, userId)
         return CorrectionResponse.from(saved, examples)
     }
 

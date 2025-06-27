@@ -3,6 +3,7 @@ package com.writebuddy.writebuddy.service
 import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
 import com.writebuddy.writebuddy.domain.Correction
 import com.writebuddy.writebuddy.domain.FeedbackType
+import com.writebuddy.writebuddy.domain.RealExample
 import com.writebuddy.writebuddy.repository.CorrectionRepository
 import com.writebuddy.writebuddy.repository.UserRepository
 import org.slf4j.Logger
@@ -48,6 +49,41 @@ class CorrectionService (
         logger.info("교정 결과 저장 완료: id={}, feedbackType={}", savedCorrection.id, savedCorrection.feedbackType)
         
         return savedCorrection
+    }
+    
+    // 통합 응답을 사용하여 교정과 예시를 함께 생성
+    fun saveWithExamples(request: CorrectionRequest, userId: Long?): Pair<Correction, List<RealExample>> {
+        logger.info("통합 교정 요청 처리 시작: {}, userId: {}", request.originSentence, userId)
+        
+        val (correctionData, examples, success) = openAiClient.generateCorrectionWithExamples(request.originSentence)
+        val (corrected, feedback, feedbackTypeStr, score, originTranslation, correctedTranslation) = correctionData
+        
+        logger.info("통합 응답 처리 성공: {}, 예시 개수: {}", success, examples.size)
+        
+        val feedbackType = parseFeedbackType(feedbackTypeStr)
+
+        val correction = Correction(
+            originSentence = request.originSentence,
+            correctedSentence = corrected,
+            feedback = feedback,
+            feedbackType = feedbackType,
+            score = score,
+            originTranslation = originTranslation,
+            correctedTranslation = correctedTranslation
+        )
+        
+        // Associate with user if userId is provided
+        if (userId != null) {
+            val user = userRepository.findById(userId)
+                .orElseThrow { IllegalArgumentException("사용자를 찾을 수 없습니다: $userId") }
+            correction.user = user
+        }
+        
+        val savedCorrection = correctionRepository.save(correction)
+        logger.info("교정 결과 저장 완료: id={}, feedbackType={}, 예시: {}개", 
+                   savedCorrection.id, savedCorrection.feedbackType, examples.size)
+        
+        return Pair(savedCorrection, examples)
     }
 
     fun getAll(): List<Correction> {

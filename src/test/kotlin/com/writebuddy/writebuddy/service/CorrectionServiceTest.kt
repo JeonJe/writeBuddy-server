@@ -4,7 +4,8 @@ import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
 import com.writebuddy.writebuddy.domain.Correction
 import com.writebuddy.writebuddy.domain.FeedbackType
 import com.writebuddy.writebuddy.repository.CorrectionRepository
-import com.writebuddy.writebuddy.service.Quadruple
+import com.writebuddy.writebuddy.repository.UserRepository
+import com.writebuddy.writebuddy.service.Sextuple
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -29,6 +30,9 @@ class CorrectionServiceTest {
 
     @MockitoBean
     private lateinit var openAiClient: OpenAiClient
+    
+    @MockitoBean
+    private lateinit var userRepository: UserRepository
 
     @Nested
     @DisplayName("교정 저장 기능")
@@ -47,8 +51,8 @@ class CorrectionServiceTest {
                 score = 8
             )
             
-            given(openAiClient.generateCorrectionAndFeedbackWithScore("hello world"))
-                .willReturn(Quadruple("Hello, world!", "대문자로 시작해야 합니다.", "GRAMMAR", 8))
+            given(openAiClient.generateCorrectionWithTranslations("hello world"))
+                .willReturn(Sextuple("Hello, world!", "대문자로 시작해야 합니다.", "GRAMMAR", 8, "안녕 세상", "안녕, 세상!"))
             given(correctionRepository.save(any()))
                 .willReturn(mockCorrection)
 
@@ -154,8 +158,8 @@ class CorrectionServiceTest {
                 score = 7
             )
             
-            given(openAiClient.generateCorrectionAndFeedbackWithScore("test sentence"))
-                .willReturn(Quadruple("Test sentence.", "테스트 피드백", "spelling", 7))
+            given(openAiClient.generateCorrectionWithTranslations("test sentence"))
+                .willReturn(Sextuple("Test sentence.", "테스트 피드백", "spelling", 7, "테스트 문장", "테스트 문장."))
             given(correctionRepository.save(any()))
                 .willReturn(mockCorrection)
 
@@ -177,8 +181,8 @@ class CorrectionServiceTest {
                 score = 5
             )
             
-            given(openAiClient.generateCorrectionAndFeedbackWithScore("test sentence"))
-                .willReturn(Quadruple("Test sentence.", "테스트 피드백", "invalid_type", 5))
+            given(openAiClient.generateCorrectionWithTranslations("test sentence"))
+                .willReturn(Sextuple("Test sentence.", "테스트 피드백", "invalid_type", 5, "테스트 문장", "테스트 문장."))
             given(correctionRepository.save(any()))
                 .willReturn(mockCorrection)
 

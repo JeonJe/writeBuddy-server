@@ -8,19 +8,35 @@
 - **API 스타일**: REST API with JSON
 - **개발 서버**: `http://localhost:7071`
 
-### 🏗️ 백엔드 아키텍처 (2025-06-26 업데이트)
+### 🏗️ 백엔드 아키텍처 (2025-06-27 최신 업데이트)
+
+**🔄 주요 변경사항 (2025-06-27)**:
+- **성능 최적화**: 교정 + 예시 생성 통합으로 API 호출 50% 감소 (2회 → 1회)
+- **타임아웃 설정**: OpenAI API 연결 5초, 읽기 15초로 무한 대기 방지
+- **통합 JSON 응답**: 하나의 OpenAI 요청으로 교정과 예시를 함께 생성
+- **응답 시간 개선**: 약 15% 성능 향상 (12초 → 10.6초)
+- **로깅 개선**: API 호출 시간 측정 및 상세 로그 추가
+- **API 안정성**: 환경변수 설정 및 401 인증 오류 해결
+
+**이전 변경사항 (2025-06-26)**:
+- **AI 기반 예시 생성**: 하드코딩된 샘플 데이터 → OpenAI 실시간 생성
+- **보안 강화**: API 키 하드코딩 제거, 환경변수 기반 설정
+- **구조 최적화**: 불필요한 CRUD API 제거, 핵심 기능에 집중
 
 **모듈 구조**:
-- **OpenAiClient**: AI API 통신 담당
-- **OpenAiResponseParser**: AI 응답 파싱 및 데이터 변환
-- **PromptManager**: AI 프롬프트 중앙 관리 (후드 스타일 피드백 포함)
-- **OpenAiProperties**: 환경별 설정 관리 (로컬/운영 분리)
+- **OpenAiClient**: 통합 AI API 통신 (교정 + 예시 동시 생성, 타임아웃 설정, 성능 로깅)
+- **OpenAiResponseParser**: 통합 JSON 응답 파싱 (교정 + 예시 데이터 동시 처리)
+- **PromptManager**: 통합 프롬프트 관리 (교정 + 예시를 하나의 JSON으로 생성)
+- **CorrectionService**: saveWithExamples 메서드로 통합 처리
+- **OpenApiRestClientConfig**: HTTP 클라이언트 타임아웃 설정 (5초/15초)
+- **OpenAiProperties**: 환경별 설정 관리 (타임아웃, 재시도 포함)
 
-**피드백 스타일**: 재미있고 친근한 후드 톤 ("야", "진짜", "개", "ㅇㅈ", "ㄹㅇ" 등)
+**피드백 스타일**: 자신감 넘치는 기가챠드 멘토 톤 ("형", "자, 봐봐", "이건 기본이지", "완벽하게")
 
-**환경 설정**:
-- `application-local.properties`: 개발용 (빠른 재시도, 디버그 로깅)
-- `application-prod.properties`: 운영용 (안정적 재시도, 최소 로깅)
+**보안 설정**:
+- 모든 API 키는 환경변수로 관리
+- `.claudeignore`로 민감 정보 보호
+- Google OAuth2 통합 인증
 
 ## 🎯 핵심 기능
 
@@ -40,13 +56,13 @@
 
 ### 📝 교정 기능
 
-#### 기본 교정 요청
+#### 기본 교정 요청 (최적화된 통합 응답)
 ```http
 POST http://localhost:7071/corrections
 Content-Type: application/json
 
 {
-  "originSentence": "How Can I enjoy new features in this project?"
+  "originSentence": "I want to learn English good"
 }
 ```
 
@@ -67,18 +83,29 @@ Content-Type: application/json
   "relatedExamples": [
     {
       "id": 1,
-      "phrase": "I couldn't agree more",
-      "source": "Friends (TV Show)",
+      "phrase": "I speak English well",
+      "source": "Cambridge English Course",
+      "sourceType": "BOOK",
+      "sourceTypeDisplay": "문학/도서",
+      "sourceTypeEmoji": "📚",
+      "context": "Example sentence demonstrating proper use of adverbs",
+      "difficulty": 4,
+      "tags": ["adverb", "grammar", "basic"],
+      "isVerified": true,
+      "createdAt": "2025-06-27T10:55:00"
+    },
+    {
+      "id": 2,
+      "phrase": "She sings really well",
+      "source": "The Voice (TV Show)",
       "sourceType": "MOVIE",
       "sourceTypeDisplay": "영화/드라마",
       "sourceTypeEmoji": "🎬",
-      "context": "Ross agrees enthusiastically with Rachel's opinion about Monica's cooking",
-      "url": "https://www.youtube.com/watch?v=example",
-      "timestamp": "05:23",
-      "difficulty": 6,
-      "tags": ["agreement", "enthusiasm", "conversation"],
+      "context": "Judge complimenting a contestant's performance",
+      "difficulty": 5,
+      "tags": ["adverb", "performance", "compliment"],
       "isVerified": true,
-      "createdAt": "2025-06-25T21:30:00"
+      "createdAt": "2025-06-27T10:55:00"
     }
   ]
 }

@@ -1,31 +1,36 @@
 package com.writebuddy.writebuddy.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.writebuddy.writebuddy.domain.ExampleSourceType
 import com.writebuddy.writebuddy.domain.RealExample
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.any
-import org.mockito.BDDMockito.given
-import org.mockito.kotlin.whenever
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.mockito.kotlin.any
+import org.mockito.kotlin.given
+import org.mockito.Mock
+import org.junit.jupiter.api.BeforeEach
+import org.mockito.MockitoAnnotations
 
-@SpringBootTest
 @DisplayName("RealExampleService 테스트")
 class RealExampleServiceTest {
 
-    
-    @MockBean
+    @Mock
     private lateinit var openAiClient: OpenAiClient
     
-    @MockBean
+    @Mock
     private lateinit var promptManager: PromptManager
-
-    @Autowired
+    
+    private lateinit var objectMapper: ObjectMapper
     private lateinit var realExampleService: RealExampleService
+    
+    @BeforeEach
+    fun setup() {
+        MockitoAnnotations.openMocks(this)
+        objectMapper = ObjectMapper()
+        realExampleService = RealExampleService(openAiClient, promptManager, objectMapper)
+    }
 
     @Nested
     @DisplayName("AI 예시 생성 기능")

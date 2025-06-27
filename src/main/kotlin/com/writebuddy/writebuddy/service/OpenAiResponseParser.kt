@@ -1,9 +1,14 @@
 package com.writebuddy.writebuddy.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.writebuddy.writebuddy.domain.ExampleSourceType
+import com.writebuddy.writebuddy.domain.RealExample
 import org.springframework.stereotype.Component
 
 @Component
-class OpenAiResponseParser {
+class OpenAiResponseParser(
+    private val objectMapper: ObjectMapper
+) {
     
     companion object {
         // API Role Constants
@@ -56,5 +61,53 @@ class OpenAiResponseParser {
         val correctedTranslation = extractValue(lines, CORRECTED_TRANSLATION_PREFIX_KOR)
         
         return Sextuple(corrected, feedback, feedbackType, score, originTranslation, correctedTranslation)
+    }
+    
+    // 새로운 JSON 형식 응답 파싱 (교정 + 예시 통합)
+    fun parseIntegratedResponse(content: String): Triple<Sextuple<String, String, String, Int, String?, String?>, List<RealExample>, Boolean> {
+        return try {
+            // JSON 파싱 시도
+            val jsonNode = objectMapper.readTree(content)
+            
+            val corrected = jsonNode.get("correctedSentence")?.asText() ?: ""
+            val feedback = jsonNode.get("feedback")?.asText() ?: ""
+            val feedbackType = jsonNode.get("feedbackType")?.asText() ?: DEFAULT_FEEDBACK_TYPE
+            val score = jsonNode.get("score")?.asInt() ?: DEFAULT_SCORE
+            val originTranslation = jsonNode.get("originTranslation")?.asText()
+            val correctedTranslation = jsonNode.get("correctedTranslation")?.asText()
+            
+            val correctionData = Sextuple(corrected, feedback, feedbackType, score, originTranslation, correctedTranslation)
+            
+            // 예시 파싱
+            val examples = mutableListOf<RealExample>()
+            val examplesNode = jsonNode.get("relatedExamples")
+            if (examplesNode != null && examplesNode.isArray) {
+                for (exampleNode in examplesNode) {
+                    try {
+                        val example = RealExample(
+                            phrase = exampleNode.get("phrase")?.asText() ?: "",
+                            source = exampleNode.get("source")?.asText() ?: "",
+                            sourceType = ExampleSourceType.valueOf(exampleNode.get("sourceType")?.asText() ?: "OTHER"),
+                            context = exampleNode.get("context")?.asText() ?: "",
+                            url = exampleNode.get("url")?.asText(),
+                            timestamp = exampleNode.get("timestamp")?.asText(),
+                            difficulty = exampleNode.get("difficulty")?.asInt() ?: 5,
+                            tags = exampleNode.get("tags")?.joinToString(",") { it.asText() },
+                            isVerified = exampleNode.get("isVerified")?.asBoolean() ?: true
+                        )
+                        examples.add(example)
+                    } catch (e: Exception) {
+                        // 개별 예시 파싱 실패시 건너뛰기
+                        continue
+                    }
+                }
+            }
+            
+            Triple(correctionData, examples, true)
+        } catch (e: Exception) {
+            // JSON 파싱 실패시 기존 방식으로 fallback
+            val correctionData = parseResponseWithTranslations(content)
+            Triple(correctionData, emptyList(), false)
+        }
     }
 }

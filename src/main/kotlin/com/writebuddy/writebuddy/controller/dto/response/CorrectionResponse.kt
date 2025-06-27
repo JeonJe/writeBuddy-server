@@ -17,7 +17,7 @@ data class CorrectionResponse(
     val createdAt: LocalDateTime,
     val originTranslation: String?,
     val correctedTranslation: String?,
-    val relatedExamples: List<RealExampleResponse> = emptyList()
+    val relatedExamples: List<RealExample> = emptyList()
 ) {
     companion object {
         fun from(
@@ -36,7 +36,7 @@ data class CorrectionResponse(
                 createdAt = correction.createdAt ?: LocalDateTime.now(),
                 originTranslation = correction.originTranslation,
                 correctedTranslation = correction.correctedTranslation,
-                relatedExamples = examples.map { RealExampleResponse.from(it) }
+                relatedExamples = examples
             )
         }
     }
