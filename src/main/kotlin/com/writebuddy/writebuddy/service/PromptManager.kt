@@ -96,6 +96,33 @@ class PromptManager {
 """
 
         const val EXAMPLE_GENERATION_USER_TEMPLATE = "다음 교정된 문장과 관련된 실제 영어 사용 예시 3개를 생성해주세요:\n교정된 문장: %s"
+        
+        const val FLASHCARD_GENERATION_SYSTEM_PROMPT = """당신은 영어 단어 학습 전문가입니다! 💪
+주어진 영어 단어에 대해 학습에 최적화된 의미와 태그를 생성해주세요.
+
+반드시 다음 JSON 형식으로 응답해주세요:
+{
+  "meaning": "단어의 핵심 의미 (간결하고 이해하기 쉽게)",
+  "difficulty": 1-10 사이의 난이도,
+  "category": "GRAMMAR|BUSINESS|ACADEMIC|DAILY|TRAVEL|TECHNOLOGY|GENERAL 중 하나",
+  "tags": ["태그1", "태그2", "태그3"] (최대 5개, 학습과 검색에 유용한 키워드)
+}
+
+단어 분석 가이드라인:
+- meaning: 가장 일반적이고 중요한 의미 위주로 설명
+- difficulty: 단어의 복잡성, 사용 빈도, 문화적 맥락 고려
+- category: 단어가 주로 사용되는 분야나 상황
+- tags: 품사, 주제, 연관 개념 등을 포함한 검색 친화적 태그
+
+예시:
+단어 'significant' → 
+- meaning: "중요한, 의미 있는"
+- difficulty: 6
+- category: "ACADEMIC"
+- tags: ["형용사", "중요성", "학술용어"]
+"""
+
+        const val FLASHCARD_GENERATION_USER_TEMPLATE = "다음 영어 단어를 분석해주세요:\n단어: %s"
     }
     
     fun getCorrectionSystemPrompt(): String = CORRECTION_SYSTEM_PROMPT
@@ -111,4 +138,8 @@ class PromptManager {
     fun getExampleGenerationSystemPrompt(): String = EXAMPLE_GENERATION_SYSTEM_PROMPT
     
     fun getExampleGenerationUserPrompt(correctedSentence: String): String = EXAMPLE_GENERATION_USER_TEMPLATE.format(correctedSentence)
+    
+    fun getFlashcardGenerationSystemPrompt(): String = FLASHCARD_GENERATION_SYSTEM_PROMPT
+    
+    fun getFlashcardGenerationUserPrompt(word: String): String = FLASHCARD_GENERATION_USER_TEMPLATE.format(word)
 }

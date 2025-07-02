@@ -54,6 +54,7 @@
 8. **즐겨찾기**: 중요한 교정 결과 북마크
 9. **개인 노트**: 학습 메모 기능
 10. **사용자 시스템**: 개인별 진도 관리
+11. **🆕 AI 플래시카드**: 단어 추가 시 AI가 자동으로 의미와 태그 생성, 스마트 암기 시스템
 
 ## 🔌 API 엔드포인트
 
@@ -510,6 +511,121 @@ GET /users/{userId}/statistics
 }
 ```
 
+### 🧠 플래시카드 기능 (NEW!)
+
+#### 플래시카드 생성 (AI 자동 분석)
+```http
+POST /flashcards
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "word": "sophisticated"
+}
+```
+
+**응답 예시:**
+```json
+{
+  "id": 1,
+  "userId": 1,
+  "word": {
+    "id": 1,
+    "word": "sophisticated",
+    "meaning": "정교한, 세련된",
+    "difficulty": 7,
+    "tags": ["형용사", "복잡성", "학술용어"],
+    "category": "ACADEMIC",
+    "isAiGenerated": true
+  },
+  "memoryStatus": "NEW",
+  "reviewCount": 0,
+  "correctCount": 0,
+  "incorrectCount": 0,
+  "accuracy": 0.0,
+  "lastReviewedAt": null,
+  "nextReviewAt": "2025-07-02T23:00:00",
+  "personalNote": null,
+  "isFavorite": false,
+  "isReadyForReview": true,
+  "createdAt": "2025-07-02T22:00:00"
+}
+```
+
+#### 플래시카드 목록 조회 (암기 상태별 필터링)
+```http
+GET /flashcards/users/{userId}?memoryStatus=LEARNING&page=0&size=20
+```
+
+**가능한 memoryStatus 값:**
+- `NEW`: 새로운 단어
+- `STRUGGLING`: 어려워하는 단어  
+- `LEARNING`: 학습 중인 단어
+- `REVIEWING`: 복습 중인 단어
+- `MASTERED`: 숙달된 단어
+
+#### 복습 대기 플래시카드 조회
+```http
+GET /flashcards/users/{userId}/review?size=10
+```
+
+**설명:** 복습 시간이 된 플래시카드들을 우선순위대로 조회
+
+#### 즐겨찾기 플래시카드 조회
+```http
+GET /flashcards/users/{userId}/favorites
+```
+
+#### 플래시카드 학습 결과 기록
+```http
+POST /flashcards/{flashcardId}/review
+Content-Type: application/json
+
+{
+  "isCorrect": true
+}
+```
+
+**기능:** 정답/오답에 따라 자동으로 암기 상태와 다음 복습 시간이 조정됩니다.
+
+#### 플래시카드 즐겨찾기 토글
+```http
+PUT /flashcards/{flashcardId}/favorite
+```
+
+#### 플래시카드 개인 노트 수정
+```http
+PUT /flashcards/{flashcardId}/note
+Content-Type: application/json
+
+{
+  "note": "이 단어는 학술 논문에서 자주 사용됨"
+}
+```
+
+#### 플래시카드 삭제
+```http
+DELETE /flashcards/{flashcardId}
+```
+
+#### 플래시카드 학습 통계
+```http
+GET /flashcards/users/{userId}/statistics
+```
+
+**응답 예시:**
+```json
+{
+  "totalCount": 50,
+  "masteredCount": 12,
+  "reviewingCount": 18,
+  "learningCount": 15,
+  "strugglingCount": 3,
+  "newCount": 2,
+  "readyForReviewCount": 8
+}
+```
+
 ## 📊 데이터 모델
 
 ### 교정 결과 (Correction)
@@ -581,6 +697,64 @@ enum ExampleSourceType {
   SPEECH = "SPEECH",      // 연설/강연 🎙️
   PODCAST = "PODCAST",    // 팟캐스트 🎧
   OTHER = "OTHER"         // 기타 📄
+}
+```
+
+### 플래시카드 (Flashcard)
+```typescript
+interface Flashcard {
+  id: number;
+  userId: number;
+  word: Word;
+  memoryStatus: MemoryStatus;
+  reviewCount: number;
+  correctCount: number;
+  incorrectCount: number;
+  accuracy: number;               // 정답률 (0.0 ~ 1.0)
+  lastReviewedAt: string | null;
+  nextReviewAt: string | null;
+  personalNote: string | null;
+  isFavorite: boolean;
+  isReadyForReview: boolean;
+  createdAt: string;
+}
+
+interface Word {
+  id: number;
+  word: string;
+  meaning: string;
+  difficulty: number;             // 1-10 난이도
+  tags: string[];                 // 검색용 태그
+  category: WordCategory;
+  isAiGenerated: boolean;
+}
+
+enum MemoryStatus {
+  NEW = "NEW",           // 새로운 단어
+  STRUGGLING = "STRUGGLING", // 어려워하는 단어
+  LEARNING = "LEARNING",     // 학습 중인 단어
+  REVIEWING = "REVIEWING",   // 복습 중인 단어
+  MASTERED = "MASTERED"      // 숙달된 단어
+}
+
+enum WordCategory {
+  GRAMMAR = "GRAMMAR",       // 문법
+  BUSINESS = "BUSINESS",     // 비즈니스
+  ACADEMIC = "ACADEMIC",     // 학술
+  DAILY = "DAILY",           // 일상
+  TRAVEL = "TRAVEL",         // 여행
+  TECHNOLOGY = "TECHNOLOGY", // 기술
+  GENERAL = "GENERAL"        // 일반
+}
+
+interface FlashcardStatistics {
+  totalCount: number;
+  masteredCount: number;
+  reviewingCount: number;
+  learningCount: number;
+  strugglingCount: number;
+  newCount: number;
+  readyForReviewCount: number;
 }
 ```
 
@@ -658,6 +832,66 @@ enum ExampleSourceType {
 │ 📝 노트: 가산명사 앞에는 관사 필요    │
 │ 📅 2025-06-25  🏷️ GRAMMAR          │
 └─────────────────────────────────────┘
+```
+
+#### 5. 플래시카드 인터페이스 (NEW!)
+```
+┌─────────────────────────────────────┐
+│           📚 플래시카드              │
+│                                     │
+│         sophisticated               │
+│                                     │
+│    [뜻 보기] [정답] [오답] [⭐]      │
+└─────────────────────────────────────┘
+
+플립 후:
+┌─────────────────────────────────────┐
+│        정교한, 세련된                │
+│                                     │
+│ 🏷️ 형용사, 복잡성, 학술용어          │
+│ 📈 난이도: 7/10  📊 정답률: 85%      │
+│ 📝 노트: 학술 논문에서 자주 사용됨    │
+└─────────────────────────────────────┘
+```
+
+#### 6. 플래시카드 대시보드
+```
+┌─────────────────────────────────────┐
+│        🧠 단어 학습 현황             │
+│                                     │
+│ 🆕 새 단어: 5개     🎯 복습 대기: 8개 │
+│ 📚 학습 중: 15개    ⭐ 숙달: 12개    │
+│ 💪 정답률: 78%      🔥 연속: 3일     │
+└─────────────────────────────────────┘
+```
+
+### 암기 상태별 색상 코드
+```css
+/* 암기 상태별 색상 */
+.memory-new { 
+  color: #6b7280;      /* 회색: 새 단어 */
+  background: #f3f4f6; 
+}
+
+.memory-struggling { 
+  color: #ef4444;      /* 빨간색: 어려운 단어 */
+  background: #fee2e2; 
+}
+
+.memory-learning { 
+  color: #f59e0b;      /* 주황색: 학습 중 */
+  background: #fef3c7; 
+}
+
+.memory-reviewing { 
+  color: #3b82f6;      /* 파란색: 복습 중 */
+  background: #dbeafe; 
+}
+
+.memory-mastered { 
+  color: #22c55e;      /* 초록색: 숙달 */
+  background: #dcfce7; 
+}
 ```
 
 ## 📱 반응형 디자인
