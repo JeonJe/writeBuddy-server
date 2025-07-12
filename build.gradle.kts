@@ -10,9 +10,9 @@ group = "com.writebuddy"
 version = "0.0.1-SNAPSHOT"
 
 java {
-	// Use available Java version in Railway environment
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
 }
 
 configurations {
@@ -34,7 +34,7 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.retry:spring-retry")
-	implementation("me.paulschwarz:spring-dotenv:4.0.0")
+	implementation("me.paulschwarz:spring-dotenv")
 
 
 	compileOnly("org.projectlombok:lombok")
@@ -45,14 +45,14 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-	testImplementation("org.mockito.kotlin:mockito-kotlin:5.0.0")
+	testImplementation("org.mockito.kotlin:mockito-kotlin")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 kotlin {
 	compilerOptions {
 		freeCompilerArgs.addAll("-Xjsr305=strict")
-		jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+		jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
 	}
 }
 
