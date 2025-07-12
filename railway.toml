@@ -2,7 +2,6 @@
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "java -jar build/libs/writebuddy-0.0.1-SNAPSHOT.jar"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 
