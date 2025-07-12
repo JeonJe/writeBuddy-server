@@ -16,3 +16,8 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
         use_sql_comments: true
+
+openai:
+  api:
+    key: test-api-key
+    base-url: http://localhost:8080/test
