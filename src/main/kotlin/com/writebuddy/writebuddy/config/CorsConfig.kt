@@ -22,6 +22,8 @@ class CorsConfig {
         origins.addAll(listOf(
             "http://localhost:*",     // 개발용 모든 로컬호스트 포트
             "http://127.0.0.1:*",     // 개발용 모든 127.0.0.1 포트
+            "https://writebuddy.vercel.app",  // Vercel 프론트엔드
+            "https://writebuddy-*.vercel.app",  // Vercel 브랜치 배포
             "https://accounts.google.com"  // Google OAuth
         ))
         

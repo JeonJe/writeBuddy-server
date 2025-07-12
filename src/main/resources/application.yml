@@ -33,7 +33,7 @@ spring:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope: openid,profile,email
-            redirect-uri: http://localhost:7071/login/oauth2/code/google
+            redirect-uri: https://writebuddy-server-production.up.railway.app/login/oauth2/code/google
         provider:
           google:
             authorization-uri: https://accounts.google.com/o/oauth2/auth

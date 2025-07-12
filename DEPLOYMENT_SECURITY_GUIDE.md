@@ -33,7 +33,13 @@ DATABASE_URL=jdbc:h2:mem:testdb  # 로컬에서는 H2 사용
 
 ### 3. Google OAuth 설정
 1. [Google Cloud Console](https://console.cloud.google.com)에서 OAuth 클라이언트 생성
-2. 리다이렉션 URI 추가: `https://your-app.railway.app/login/oauth2/code/google`
+2. 리다이렉션 URI 추가: `https://writebuddy-server-production.up.railway.app/login/oauth2/code/google`
+
+### 4. CORS 설정 (프론트엔드 배포 시)
+프론트엔드가 Vercel에 배포된 경우 CORS 설정이 자동으로 적용됩니다:
+- `https://writebuddy.vercel.app` (메인 도메인)
+- `https://writebuddy-*.vercel.app` (브랜치 배포)
+- 모든 localhost 포트 (개발용)
 
 ## 🔒 보안 관리
 
