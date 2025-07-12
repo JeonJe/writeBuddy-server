@@ -1,6 +1,5 @@
 package com.writebuddy.writebuddy.config
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.cors.CorsConfiguration
@@ -10,24 +9,18 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @Configuration
 class CorsConfig {
 
-    @Value("\${cors.allowed-origins:http://localhost:3000,http://localhost:7070}")
-    private lateinit var allowedOrigins: String
-
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
         
-        // 환경별 허용 Origin 설정
-        val origins = allowedOrigins.split(",").map { it.trim() }.toMutableList()
-        origins.addAll(listOf(
-            "http://localhost:*",     // 개발용 모든 로컬호스트 포트
-            "http://127.0.0.1:*",     // 개발용 모든 127.0.0.1 포트
-            "https://writebuddy.vercel.app",  // Vercel 프론트엔드
+        // 허용할 Origin 설정
+        configuration.allowedOriginPatterns = listOf(
+            "http://localhost:*",               // 로컬 개발
+            "http://127.0.0.1:*",               // 로컬 개발
+            "https://writebuddy.vercel.app",    // Vercel 메인 도메인
             "https://writebuddy-*.vercel.app",  // Vercel 브랜치 배포
-            "https://accounts.google.com"  // Google OAuth
-        ))
-        
-        configuration.allowedOriginPatterns = origins
+            "https://accounts.google.com"       // Google OAuth
+        )
         
         // 허용할 HTTP 메서드
         configuration.allowedMethods = listOf(

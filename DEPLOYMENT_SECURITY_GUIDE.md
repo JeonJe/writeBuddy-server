@@ -40,6 +40,7 @@ DATABASE_URL=jdbc:h2:mem:testdb  # 로컬에서는 H2 사용
 - `https://writebuddy.vercel.app` (메인 도메인)
 - `https://writebuddy-*.vercel.app` (브랜치 배포)
 - 모든 localhost 포트 (개발용)
+- Google OAuth 도메인
 
 ## 🔒 보안 관리
 
