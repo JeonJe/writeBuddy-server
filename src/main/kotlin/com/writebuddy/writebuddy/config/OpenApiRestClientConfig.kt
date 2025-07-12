@@ -14,7 +14,7 @@ class OpenApiRestClientConfig {
 
     @Value("\${openai.api.key}")
     private lateinit var apiKey: String
-    
+
     @Value("\${openai.api.base-url}")
     private lateinit var baseUrl: String
     
@@ -35,7 +35,6 @@ class OpenApiRestClientConfig {
             }
             .build()
     }
-    
     private fun createRequestFactory(): ClientHttpRequestFactory {
         val factory = SimpleClientHttpRequestFactory()
         factory.setConnectTimeout(Duration.ofSeconds(connectTimeout.toLong()))
