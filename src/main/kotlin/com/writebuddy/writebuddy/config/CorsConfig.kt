@@ -16,7 +16,7 @@ class CorsConfig {
         // 허용할 Origin 설정
         configuration.allowedOriginPatterns = listOf(
             "http://localhost:*",               // 로컬 개발
-            "http://127.0.0.1:*",               // 로컬 개발
+            "http://127.0.0.1:*",               // 로컬 개발 (일부 환경에서 localhost 대신 사용)
             "https://writebuddy.vercel.app",    // Vercel 메인 도메인
             "https://writebuddy-*.vercel.app",  // Vercel 브랜치 배포
             "https://accounts.google.com"       // Google OAuth

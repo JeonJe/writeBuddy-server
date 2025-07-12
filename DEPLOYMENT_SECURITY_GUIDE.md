@@ -33,7 +33,7 @@ DATABASE_URL=jdbc:h2:mem:testdb  # 로컬에서는 H2 사용
 
 ### 3. Google OAuth 설정
 1. [Google Cloud Console](https://console.cloud.google.com)에서 OAuth 클라이언트 생성
-2. 리다이렉션 URI 추가: `https://writebuddy-server-production.up.railway.app/login/oauth2/code/google`
+2. 리다이렉션 URI 추가: `https://writebuddy.up.railway.app/login/oauth2/code/google`
 
 ### 4. CORS 설정 (프론트엔드 배포 시)
 프론트엔드가 Vercel에 배포된 경우 CORS 설정이 자동으로 적용됩니다:
@@ -108,14 +108,14 @@ cmd = "java -Dspring.profiles.active=prod -jar build/libs/WriteBuddy-0.0.1-SNAPS
 ### 주요 API 엔드포인트
 ```bash
 # 문장 교정
-POST https://your-app.railway.app/corrections
+POST https://writebuddy.up.railway.app/corrections
 {"originSentence": "I goes to school every day"}
 
 # 모든 교정 내역
-GET https://your-app.railway.app/corrections
+GET https://writebuddy.up.railway.app/corrections
 
 # 통계
-GET https://your-app.railway.app/corrections/statistics
+GET https://writebuddy.up.railway.app/corrections/statistics
 ```
 
 ## ⚠️ 보안 체크리스트
@@ -137,7 +137,7 @@ GET https://your-app.railway.app/corrections/statistics
 ./gradlew clean build -x test -x check --no-daemon
 
 # API 테스트 (포트 번호 제외)
-curl -X POST "https://your-app.railway.app/corrections" \
+curl -X POST "https://writebuddy.up.railway.app/corrections" \
   -H "Content-Type: application/json" \
   -d '{"originSentence": "test sentence"}'
 ```
