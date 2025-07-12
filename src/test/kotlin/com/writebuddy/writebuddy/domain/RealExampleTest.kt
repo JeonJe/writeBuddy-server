@@ -192,7 +192,7 @@ class RealExampleTest {
             val sourceTypes = ExampleSourceType.values()
 
             // then
-            assertThat(sourceTypes).hasSize(9)
+            assertThat(sourceTypes).hasSize(12)
             assertThat(sourceTypes).containsExactlyInAnyOrder(
                 ExampleSourceType.MOVIE,
                 ExampleSourceType.SONG,
@@ -202,6 +202,9 @@ class RealExampleTest {
                 ExampleSourceType.SOCIAL,
                 ExampleSourceType.SPEECH,
                 ExampleSourceType.PODCAST,
+                ExampleSourceType.TECH_DOC,
+                ExampleSourceType.FORUM,
+                ExampleSourceType.CODE_REVIEW,
                 ExampleSourceType.OTHER
             )
         }

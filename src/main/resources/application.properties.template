@@ -8,7 +8,8 @@ spring.application.name=WriteBuddy
 server.port=7071
 
 # OpenAI API Configuration
-openai.api.key=***REMOVED***
+# IMPORTANT: Set OPENAI_API_KEY environment variable
+openai.api.key=${OPENAI_API_KEY}
 openai.api.base-url=https://api.openai.com/v1
 openai.api.model=gpt-4o-mini
 openai.api.temperature=0.3
@@ -37,8 +38,9 @@ spring.jpa.format-sql=true
 spring.jpa.properties.hibernate.enable_lazy_load_no_trans=true
 
 # OAuth2 Configuration
-spring.security.oauth2.client.registration.google.client-id=${GOOGLE_CLIENT_ID:your-google-client-id}
-spring.security.oauth2.client.registration.google.client-secret=${GOOGLE_CLIENT_SECRET:your-google-client-secret}
+# IMPORTANT: Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables
+spring.security.oauth2.client.registration.google.client-id=${GOOGLE_CLIENT_ID}
+spring.security.oauth2.client.registration.google.client-secret=${GOOGLE_CLIENT_SECRET}
 spring.security.oauth2.client.registration.google.scope=openid,profile,email
 spring.security.oauth2.client.registration.google.redirect-uri=http://localhost:7071/login/oauth2/code/google
 

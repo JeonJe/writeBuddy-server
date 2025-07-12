@@ -34,10 +34,12 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.retry:spring-retry")
+	implementation("me.paulschwarz:spring-dotenv:4.0.0")
 
 
 	compileOnly("org.projectlombok:lombok")
-	runtimeOnly("com.h2database:h2")
+	runtimeOnly("org.postgresql:postgresql")
+	runtimeOnly("com.h2database:h2") // 로컬 개발용 유지
 	annotationProcessor("org.projectlombok:lombok")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

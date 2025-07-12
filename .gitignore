@@ -45,12 +45,18 @@ out/
 CLAUDE.md
 
 # Configuration files with sensitive data
+src/main/resources/application.properties
 src/main/resources/application-prod.properties
 src/main/resources/application-dev.properties
 src/main/resources/application-local.properties
 **/application-*.properties
 
 # API Keys and secrets
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
 *.env
 .env.*
 secrets/

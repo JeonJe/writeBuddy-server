@@ -46,5 +46,8 @@ enum class ExampleSourceType(val displayName: String, val emoji: String) {
     SOCIAL("소셜미디어", "📱"),
     SPEECH("연설/강연", "🎙️"),
     PODCAST("팟캐스트", "🎧"),
+    TECH_DOC("기술문서", "📝"),
+    FORUM("포럼/Q&A", "💬"),
+    CODE_REVIEW("코드리뷰", "👨‍💻"),
     OTHER("기타", "📄")
 }
