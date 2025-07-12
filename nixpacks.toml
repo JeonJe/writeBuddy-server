@@ -5,4 +5,4 @@ nixPkgs = ["openjdk17"]
 cmds = ["./gradlew build -x test -x check --no-daemon"]
 
 [phases.start]
-cmd = "java -Dspring.profiles.active=prod -jar build/libs/WriteBuddy-0.0.1-SNAPSHOT.jar"
+cmd = "java -Dspring.profiles.active=prod -jar build/libs/writebuddy-0.0.1-SNAPSHOT.jar"
