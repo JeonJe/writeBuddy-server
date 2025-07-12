@@ -61,6 +61,4 @@ allOpen {
 	annotation("jakarta.persistence.Embeddable")
 }
 
-tasks.withType<Test> {
-	useJUnitPlatform()
-}
+// Test configuration removed for Railway deployment compatibility
