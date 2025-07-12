@@ -12,11 +12,11 @@ import java.time.Duration
 @Configuration
 class OpenApiRestClientConfig {
 
-    @Value("\${openai.api.key}")
-    private lateinit var apiKey: String
+    @Value("\${openai.api.key:}")
+    private var apiKey: String = ""
 
-    @Value("\${openai.api.base-url}")
-    private lateinit var baseUrl: String
+    @Value("\${openai.api.base-url:https://api.openai.com/v1}")
+    private var baseUrl: String = ""
     
     @Value("\${openai.timeout.connect:10}")
     private var connectTimeout: Int = 10
