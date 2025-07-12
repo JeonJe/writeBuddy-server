@@ -10,9 +10,9 @@ group = "com.writebuddy"
 version = "0.0.1-SNAPSHOT"
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+	// Use available Java version in Railway environment
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
 }
 
 configurations {
@@ -52,6 +52,7 @@ dependencies {
 kotlin {
 	compilerOptions {
 		freeCompilerArgs.addAll("-Xjsr305=strict")
+		jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
 	}
 }
 
