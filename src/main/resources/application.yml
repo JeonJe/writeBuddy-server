@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: WriteBuddy
+  
+  datasource:
+    url: ${DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-init-sql: SELECT 1
+      connection-test-query: SELECT 1
+      validation-timeout: 3000
+      auto-commit: true
+  
+  jpa:
+    properties:
+      hibernate:
+        enable_lazy_load_no_trans: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: openid,profile,email
+            redirect-uri: http://localhost:7071/login/oauth2/code/google
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
+
+server:
+  port: 7071
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY}
+    base-url: https://api.openai.com/v1
+    model: gpt-4o-mini
+    temperature: 0.3
+    endpoint: /chat/completions
+  retry:
+    max-attempts: 3
+    delay: 1000
+    multiplier: 2.0

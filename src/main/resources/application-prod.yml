@@ -1,0 +1,13 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    format-sql: true
+
+logging:
+  level:
+    com.writebuddy: INFO
+    org.springframework.web: WARN
+    org.hibernate: WARN
+    org.springframework.security: WARN

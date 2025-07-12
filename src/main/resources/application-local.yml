@@ -1,0 +1,11 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    format-sql: true
+
+logging:
+  level:
+    com.writebuddy: DEBUG
+    org.springframework.web: DEBUG
