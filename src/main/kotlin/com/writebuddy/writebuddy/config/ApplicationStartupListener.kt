@@ -18,33 +18,41 @@ class ApplicationStartupListener : ApplicationListener<WebServerInitializedEvent
         
         // Railway 환경 변수들
         val railwayPublicDomain = environment.getProperty("RAILWAY_PUBLIC_DOMAIN")
-        val railwayStaticUrl = environment.getProperty("RAILWAY_STATIC_URL")
+        val railwayStaticUrl = environment.getProperty("RAILWAY_STATIC_URL") 
         val railwayEnvironment = environment.getProperty("RAILWAY_ENVIRONMENT")
-        val isRailway = railwayPublicDomain != null
+        val railwayServiceName = environment.getProperty("RAILWAY_SERVICE_NAME")
+        val isRailway = railwayPublicDomain != null || railwayStaticUrl != null || railwayServiceName != null
         
-        println("\n" + "=".repeat(70))
-        println("🚀 WriteBuddy Application Started Successfully!")
-        println("📍 Port: $port")
-        println("🔧 Active Profile: $activeProfile")
-        
-        if (isRailway) {
-            println("☁️  Railway Environment: ${railwayEnvironment ?: "production"}")
-            railwayPublicDomain?.let { 
-                println("🌐 Public Domain: https://$it") 
-                println("🔗 API Base URL: https://$it/corrections")
+        val separator = "=".repeat(70)
+        val startupMessage = buildString {
+            appendLine("\n$separator")
+            appendLine("🚀 WriteBuddy Application Started Successfully!")
+            appendLine("📍 Port: $port")
+            appendLine("🔧 Active Profile: $activeProfile")
+            
+            if (isRailway) {
+                appendLine("☁️  Railway Environment: ${railwayEnvironment ?: "production"}")
+                railwayPublicDomain?.let { 
+                    appendLine("🌐 Public Domain: https://$it") 
+                    appendLine("🔗 API Base URL: https://$it/corrections")
+                }
+                railwayStaticUrl?.let { 
+                    appendLine("🔗 Static URL: $it") 
+                }
+            } else {
+                appendLine("💻 Local Development Mode")
+                appendLine("🌐 Local URL: http://localhost:$port")
+                appendLine("🔗 API Base: http://localhost:$port/corrections")
             }
-            railwayStaticUrl?.let { 
-                println("🔗 Static URL: $it") 
+            
+            if (profiles.contains("prod")) {
+                appendLine("🚀 Production Mode Enabled")
             }
-        } else {
-            println("💻 Local Development Mode")
-            println("🌐 Local URL: http://localhost:$port")
-            println("🔗 API Base: http://localhost:$port/corrections")
+            appendLine("$separator\n")
         }
         
-        if (profiles.contains("prod")) {
-            println("🚀 Production Mode Enabled")
-        }
-        println("=".repeat(70) + "\n")
+        // 콘솔과 로그 파일 모두에 출력
+        println(startupMessage)
+        logger.info("WriteBuddy Application Started - Port: $port, Profile: $activeProfile, Railway: $isRailway")
     }
 }

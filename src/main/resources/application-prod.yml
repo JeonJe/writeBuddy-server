@@ -19,7 +19,11 @@ spring:
 logging:
   level:
     com.writebuddy: INFO
+    com.writebuddy.writebuddy.config.ApplicationStartupListener: INFO  # 시작 로그 허용
     org.springframework.web: WARN
     org.hibernate: WARN
     org.springframework.security: WARN
-    com.zaxxer.hikari: DEBUG        # 연결 풀 디버그
+    com.zaxxer.hikari: INFO         # 연결 풀 정보
+    root: INFO                      # 기본 로그 레벨
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"

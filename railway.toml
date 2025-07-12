@@ -4,11 +4,19 @@ builder = "NIXPACKS"
 [deploy]
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
+healthcheckPath = "/actuator/health"
+healthcheckTimeout = 30
 
 [environments.production]
 SPRING_PROFILES_ACTIVE = "prod"
+# 로깅 설정
+LOGGING_LEVEL_ROOT = "INFO"
+LOGGING_LEVEL_COM_WRITEBUDDY = "INFO"
 
 [environments.production.variables]
+# 애플리케이션 시작 로그 활성화
+LOGGING_PATTERN_CONSOLE = "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
+
 # These should be set in Railway dashboard
 # OPENAI_API_KEY = "your-openai-api-key"
 # GOOGLE_CLIENT_ID = "your-google-client-id"
