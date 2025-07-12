@@ -9,3 +9,13 @@ logging:
   level:
     com.writebuddy: DEBUG
     org.springframework.web: DEBUG
+    org.springframework.boot.web.embedded.tomcat: INFO
+
+# 서버 시작 정보 표시
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+server:
+  port: ${PORT:7071}

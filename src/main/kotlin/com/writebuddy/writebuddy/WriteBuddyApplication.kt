@@ -11,3 +11,4 @@ class WriteBuddyApplication
 fun main(args: Array<String>) {
 	runApplication<WriteBuddyApplication>(*args)
 }
+
