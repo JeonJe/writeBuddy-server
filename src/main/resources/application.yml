@@ -42,7 +42,8 @@ spring:
             jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
 
 server:
-  port: 7071
+  port: ${PORT:7071}
+  address: 0.0.0.0
 
 openai:
   api:
