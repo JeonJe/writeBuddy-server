@@ -45,6 +45,11 @@ spring:
 server:
   port: ${PORT:7071}
   address: 0.0.0.0
+  tomcat:
+    connection-timeout: 120s        # HTTP 연결 타임아웃 2분
+    threads:
+      max: 200                      # 최대 스레드 수
+      min-spare: 10                 # 최소 스레드 수
 
 openai:
   api:
@@ -53,6 +58,9 @@ openai:
     model: gpt-4o-mini
     temperature: 0.3
     endpoint: /chat/completions
+  timeout:
+    connect: 10     # 연결 타임아웃 (초)
+    read: 60        # 읽기 타임아웃 60초로 증가
   retry:
     max-attempts: 3
     delay: 1000

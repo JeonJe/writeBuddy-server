@@ -87,11 +87,43 @@ class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errorResponse)
     }
 
+    @ExceptionHandler(java.io.EOFException::class)
+    fun handleEOFException(
+        ex: java.io.EOFException,
+        request: WebRequest
+    ): ResponseEntity<Void> {
+        // 클라이언트 연결 끊김은 로그하지 않고 조용히 처리
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+    }
+
+    @ExceptionHandler(java.io.IOException::class)
+    fun handleIOException(
+        ex: java.io.IOException,
+        request: WebRequest
+    ): ResponseEntity<Void> {
+        // 일반적인 IO 예외는 DEBUG 레벨로만 로그
+        if (ex.message?.contains("Broken pipe") == true || 
+            ex.message?.contains("Connection reset") == true) {
+            logger.debug("Client connection issue: {}", ex.message)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+        }
+        
+        logger.warn("IO error: {}", ex.message)
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
+    }
+
     @ExceptionHandler(Exception::class)
     fun handleGenericException(
         ex: Exception,
         request: WebRequest
     ): ResponseEntity<ErrorResponse> {
+        // 연결 관련 예외는 조용히 처리
+        if (ex.cause is java.io.EOFException || 
+            ex.message?.contains("Broken pipe") == true) {
+            logger.debug("Client connection terminated: {}", ex.message)
+            return ResponseEntity.badRequest().build()
+        }
+        
         logger.error("Unexpected error: {}", ex.message, ex)
         
         val errorResponse = ErrorResponse(

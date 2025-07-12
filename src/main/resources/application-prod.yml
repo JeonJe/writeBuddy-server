@@ -16,6 +16,22 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect  # 명시적 dialect 설정
 
+# 서버 설정 (프로덕션용)
+server:
+  port: ${PORT:7071}
+  address: 0.0.0.0
+  tomcat:
+    connection-timeout: 180s        # HTTP 연결 타임아웃 3분 (프로덕션에서 더 길게)
+    threads:
+      max: 100                      # 프로덕션에서는 스레드 수 줄임
+      min-spare: 5
+
+# OpenAI 타임아웃 설정 (프로덕션용)
+openai:
+  timeout:
+    connect: 15     # 연결 타임아웃
+    read: 90        # 읽기 타임아웃 90초 (프로덕션에서 더 길게)
+
 logging:
   level:
     com.writebuddy: INFO
@@ -24,6 +40,8 @@ logging:
     org.hibernate: WARN
     org.springframework.security: WARN
     com.zaxxer.hikari: INFO         # 연결 풀 정보
+    org.apache.catalina.connector: WARN  # Tomcat 연결 에러 줄이기
+    org.apache.coyote: WARN         # HTTP 프로토콜 에러 줄이기
     root: INFO                      # 기본 로그 레벨
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
