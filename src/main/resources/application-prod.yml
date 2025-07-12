@@ -1,9 +1,20 @@
 spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 3          # Supabase 무료 플랜 제한에 맞게 줄임
+      minimum-idle: 1               # 최소 연결 수 줄임
+      connection-timeout: 20000     # 연결 타임아웃 줄임
+      idle-timeout: 300000          # 유휴 타임아웃 줄임
+      max-lifetime: 600000          # 최대 생명주기 줄임
+      leak-detection-threshold: 60000
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
-    format-sql: true
+    show-sql: false                 # 프로덕션에서는 SQL 로그 비활성화
+    format-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect  # 명시적 dialect 설정
 
 logging:
   level:
@@ -11,3 +22,4 @@ logging:
     org.springframework.web: WARN
     org.hibernate: WARN
     org.springframework.security: WARN
+    com.zaxxer.hikari: DEBUG        # 연결 풀 디버그

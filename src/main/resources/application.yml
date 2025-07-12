@@ -6,19 +6,20 @@ spring:
     url: ${DATABASE_URL}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
+      maximum-pool-size: 5          # Supabase 제한에 맞게 줄임
+      minimum-idle: 2               # 최소 연결 수 줄임
+      connection-timeout: 20000     # 20초로 줄임
+      idle-timeout: 300000          # 5분으로 줄임
+      max-lifetime: 600000          # 10분으로 줄임
       connection-init-sql: SELECT 1
-      connection-test-query: SELECT 1
-      validation-timeout: 3000
+      validation-timeout: 5000
       auto-commit: true
+      leak-detection-threshold: 60000  # 연결 누수 감지
   
   jpa:
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect  # 명시적 dialect 설정
         enable_lazy_load_no_trans: true
         jdbc:
           batch_size: 20
