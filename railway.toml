@@ -4,8 +4,6 @@ builder = "NIXPACKS"
 [deploy]
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
-healthcheckPath = "/actuator/health"
-healthcheckTimeout = 30
 
 [environments.production]
 SPRING_PROFILES_ACTIVE = "prod"
