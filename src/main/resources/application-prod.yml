@@ -1,8 +1,8 @@
 spring:
   datasource:
     hikari:
-      maximum-pool-size: 10          # Supabase connection pool과 함께 고려
-      minimum-idle: 1               # 최소 연결 수 줄임
+      maximum-pool-size: 5          # Supabase connection pool과 함께 고려
+      minimum-idle: 2               # 최소 1개만 유지
       connection-timeout: 20000     # 연결 타임아웃 줄임
       idle-timeout: 300000          # 유휴 타임아웃 줄임
       max-lifetime: 600000          # 최대 생명주기 줄임

@@ -6,7 +6,7 @@ spring:
     url: ${DATABASE_URL}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 10         # 프로덕션 자원 사용량 10으로 증가
+      maximum-pool-size: 5
       minimum-idle: 1               # 최소 1개만 유지
       connection-timeout: 15000     # 15초
       idle-timeout: 180000          # 3분으로 줄임
