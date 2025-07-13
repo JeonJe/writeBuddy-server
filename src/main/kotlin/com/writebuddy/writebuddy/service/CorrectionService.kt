@@ -9,6 +9,7 @@ import com.writebuddy.writebuddy.repository.CorrectionRepository
 import com.writebuddy.writebuddy.repository.UserRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 
 @Service
@@ -95,10 +96,16 @@ class CorrectionService (
     }
 
     fun getAll(page: Int = 0, size: Int = 20): List<Correction> {
-        logger.debug("교정 목록 조회 - page: {}, size: {}", page, size)
-        return correctionRepository.findAll(
-            org.springframework.data.domain.PageRequest.of(page, size)
+        val startTime = System.currentTimeMillis()
+        logger.debug("교정 목록 조회 시작 - page: {}, size: {}", page, size)
+        
+        val result = correctionRepository.findAll(
+            PageRequest.of(page, size)
         ).content
+        
+        val duration = System.currentTimeMillis() - startTime
+        logger.info("교정 목록 조회 완료: {}ms, 조회된 건수: {}", duration, result.size)
+        return result
     }
     
     fun getFeedbackTypeStatistics(): Map<String, Int> {

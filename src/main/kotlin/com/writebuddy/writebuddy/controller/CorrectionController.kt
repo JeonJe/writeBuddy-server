@@ -8,6 +8,8 @@ import com.writebuddy.writebuddy.service.CorrectionService
 import com.writebuddy.writebuddy.service.RealExampleService
 import com.writebuddy.writebuddy.service.LearningAnalyticsService
 import jakarta.validation.Valid
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -17,6 +19,7 @@ class CorrectionController(
     private val realExampleService: RealExampleService,
     private val learningAnalyticsService: LearningAnalyticsService
 ) {
+    private val logger: Logger = LoggerFactory.getLogger(CorrectionController::class.java)
 
     @PostMapping()
     fun create(@RequestBody @Valid request: CorrectionRequest) : CorrectionResponse {
@@ -35,8 +38,15 @@ class CorrectionController(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int
     ): List<CorrectionResponse> {
+        val startTime = System.currentTimeMillis()
+        logger.info("GET /corrections 요청 시작 - page: {}, size: {}", page, size)
+        
         val corrections = correctionService.getAll(page, size)
-        return corrections.map { CorrectionResponse.from(it) }
+        val result = corrections.map { CorrectionResponse.from(it) }
+        
+        val duration = System.currentTimeMillis() - startTime
+        logger.info("GET /corrections 요청 완료: {}ms, 반환된 건수: {}", duration, result.size)
+        return result
     }
     
     // DEPRECATED: 통합 통계 API (/statistics/users/{userId}/unified)로 대체됨
