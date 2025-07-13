@@ -3,6 +3,7 @@ package com.writebuddy.writebuddy.controller
 import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
 import com.writebuddy.writebuddy.controller.dto.request.UpdateMemoRequest
 import com.writebuddy.writebuddy.controller.dto.response.CorrectionResponse
+import com.writebuddy.writebuddy.controller.dto.response.CorrectionListResponse
 import com.writebuddy.writebuddy.domain.FeedbackType
 import com.writebuddy.writebuddy.service.CorrectionService
 import com.writebuddy.writebuddy.service.RealExampleService
@@ -36,17 +37,25 @@ class CorrectionController(
     @GetMapping
     fun getAll(
         @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "20") size: Int
-    ): List<CorrectionResponse> {
+        @RequestParam(defaultValue = "20") size: Int,
+        @RequestParam(defaultValue = "false") lightweight: Boolean
+    ): Any {
         val startTime = System.currentTimeMillis()
-        logger.info("GET /corrections 요청 시작 - page: {}, size: {}", page, size)
+        logger.info("GET /corrections 요청 시작 - page: {}, size: {}, lightweight: {}", page, size, lightweight)
         
-        val corrections = correctionService.getAll(page, size)
-        val result = corrections.map { CorrectionResponse.from(it) }
-        
-        val duration = System.currentTimeMillis() - startTime
-        logger.info("GET /corrections 요청 완료: {}ms, 반환된 건수: {}", duration, result.size)
-        return result
+        return if (lightweight) {
+            val projections = correctionService.getAllLightweight(page, size)
+            val result = projections.map { CorrectionListResponse.from(it) }
+            val duration = System.currentTimeMillis() - startTime
+            logger.info("GET /corrections (경량) 요청 완료: {}ms, 반환된 건수: {}", duration, result.size)
+            result
+        } else {
+            val corrections = correctionService.getAll(page, size)
+            val result = corrections.map { CorrectionResponse.from(it) }
+            val duration = System.currentTimeMillis() - startTime
+            logger.info("GET /corrections (전체) 요청 완료: {}ms, 반환된 건수: {}", duration, result.size)
+            result
+        }
     }
     
     // DEPRECATED: 통합 통계 API (/statistics/users/{userId}/unified)로 대체됨

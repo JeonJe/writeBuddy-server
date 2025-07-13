@@ -97,14 +97,27 @@ class CorrectionService (
 
     fun getAll(page: Int = 0, size: Int = 20): List<Correction> {
         val startTime = System.currentTimeMillis()
-        logger.debug("교정 목록 조회 시작 - page: {}, size: {}", page, size)
+        logger.debug("교정 목록 조회 시작 (전체 데이터) - page: {}, size: {}", page, size)
         
         val result = correctionRepository.findAll(
             PageRequest.of(page, size)
         ).content
         
         val duration = System.currentTimeMillis() - startTime
-        logger.info("교정 목록 조회 완료: {}ms, 조회된 건수: {}", duration, result.size)
+        logger.info("교정 목록 조회 완료 (전체 데이터): {}ms, 조회된 건수: {}", duration, result.size)
+        return result
+    }
+    
+    fun getAllLightweight(page: Int = 0, size: Int = 20): List<com.writebuddy.writebuddy.repository.CorrectionLightProjection> {
+        val startTime = System.currentTimeMillis()
+        logger.debug("교정 목록 조회 시작 (경량 데이터) - page: {}, size: {}", page, size)
+        
+        val result = correctionRepository.findAllLightweight(
+            PageRequest.of(page, size)
+        ).content
+        
+        val duration = System.currentTimeMillis() - startTime
+        logger.info("교정 목록 조회 완료 (경량 데이터): {}ms, 조회된 건수: {}", duration, result.size)
         return result
     }
     

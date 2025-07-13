@@ -93,6 +93,15 @@ interface CorrectionRepository : JpaRepository<Correction, Long> {
     fun findAllErrorPatterns(): List<ErrorPattern>
     
     fun findByIsFavoriteTrue(): List<Correction>
+    
+    @Query("""
+        SELECT c.id as id, c.originSentence as originSentence, c.correctedSentence as correctedSentence,
+               c.feedbackType as feedbackType, c.score as score, c.isFavorite as isFavorite,
+               c.createdAt as createdAt
+        FROM Correction c
+        ORDER BY c.createdAt DESC
+    """)
+    fun findAllLightweight(pageable: org.springframework.data.domain.Pageable): org.springframework.data.domain.Page<CorrectionLightProjection>
 }
 
 interface FeedbackTypeCount {
@@ -114,5 +123,15 @@ interface ScoreTrendProjection {
     fun getId(): Long
     fun getScore(): Int
     fun getFeedbackType(): FeedbackType
+    fun getCreatedAt(): LocalDateTime?
+}
+
+interface CorrectionLightProjection {
+    fun getId(): Long
+    fun getOriginSentence(): String
+    fun getCorrectedSentence(): String
+    fun getFeedbackType(): FeedbackType
+    fun getScore(): Int?
+    fun getIsFavorite(): Boolean
     fun getCreatedAt(): LocalDateTime?
 }
