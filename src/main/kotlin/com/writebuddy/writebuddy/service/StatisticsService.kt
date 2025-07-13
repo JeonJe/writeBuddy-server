@@ -1,7 +1,6 @@
 package com.writebuddy.writebuddy.service
 
 import com.writebuddy.writebuddy.controller.dto.response.UnifiedStatisticsResponse
-import com.writebuddy.writebuddy.controller.dto.response.UnifiedStatisticsResponse.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -14,7 +13,7 @@ class StatisticsService(
 ) {
     private val logger: Logger = LoggerFactory.getLogger(StatisticsService::class.java)
     
-    fun getUnifiedStatistics(): UnifiedStatisticsResponse {
+    fun getStatistics(): UnifiedStatisticsResponse {
         logger.info("통합 통계 조회 시작: 교정 데이터 기반")
         
         // 1. Correction Statistics

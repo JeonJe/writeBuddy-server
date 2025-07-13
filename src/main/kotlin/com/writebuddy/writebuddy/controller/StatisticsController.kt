@@ -12,6 +12,6 @@ class StatisticsController(
     
     @GetMapping
     fun getStatistics(): UnifiedStatisticsResponse {
-        return statisticsService.getUnifiedStatistics()
+        return statisticsService.getStatistics()
     }
 }

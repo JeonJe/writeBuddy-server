@@ -35,10 +35,10 @@ class StatisticsControllerTest {
         fun getUnifiedStatistics_successScenario() {
             // given
             val mockResponse = createMockUnifiedStatisticsResponse()
-            given(statisticsService.getUnifiedStatistics()).willReturn(mockResponse)
+            given(statisticsService.getStatistics()).willReturn(mockResponse)
 
             // when & then
-            mockMvc.perform(get("/statistics/unified"))
+            mockMvc.perform(get("/statistics"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.userStatistics.totalCorrections").value(25))
