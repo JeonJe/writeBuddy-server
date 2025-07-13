@@ -29,7 +29,7 @@ class StatisticsService(
         val dailyStatistics = UnifiedStatisticsResponse.DailyStatistics(
             totalCorrections = dailyStats["totalCorrections"] as Int,
             averageScore = dailyStats["averageScore"] as Double,
-            feedbackTypes = dailyStats["feedbackTypes"] as Map<String, Int>
+            feedbackTypes = dailyStats["feedbackTypes"] as? Map<String, Int> ?: emptyMap()
         )
         
         val scoreTrend = correctionService.getScoreTrend().map { item ->

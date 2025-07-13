@@ -24,8 +24,8 @@ class SecurityConfig(
             .authorizeHttpRequests { requests ->
                 requests
                     .requestMatchers("/login/**", "/oauth2/**", "/error", "/h2-console/**").permitAll()
-                    .requestMatchers("/hello/**").permitAll()
-                    .requestMatchers("/corrections/**", "/examples/**", "/chat").permitAll()
+                    .requestMatchers("/hello/**", "/health/**").permitAll()
+                    .requestMatchers("/corrections/**", "/examples/**", "/chat", "/statistics").permitAll()
                     .requestMatchers("/corrections/users/**", "/users/**", "/analytics/**").authenticated()
                     .anyRequest().permitAll()
             }

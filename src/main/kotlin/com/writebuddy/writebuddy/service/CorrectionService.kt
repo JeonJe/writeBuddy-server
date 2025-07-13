@@ -94,30 +94,51 @@ class CorrectionService (
         return Pair(savedCorrection, examples)
     }
 
-    fun getAll(): List<Correction> {
-        logger.debug("전체 교정 목록 조회")
-        return correctionRepository.findAll()
+    fun getAll(page: Int = 0, size: Int = 20): List<Correction> {
+        logger.debug("교정 목록 조회 - page: {}, size: {}", page, size)
+        return correctionRepository.findAll(
+            org.springframework.data.domain.PageRequest.of(page, size)
+        ).content
     }
     
     fun getFeedbackTypeStatistics(): Map<String, Int> {
-        logger.debug("피드백 타입 통계 조회")
-        return correctionRepository.getFeedbackTypeStatistics()
+        val startTime = System.currentTimeMillis()
+        logger.debug("피드백 타입 통계 조회 시작")
+        val result = correctionRepository.getFeedbackTypeStatistics()
             .associate { it.getFeedbackType().name to it.getCount().toInt() }
+        val duration = System.currentTimeMillis() - startTime
+        logger.info("피드백 타입 통계 조회 완료: {}ms", duration)
+        return result
     }
     
     fun getAverageScore(): Double {
-        logger.debug("평균 점수 계산")
-        return correctionRepository.calculateOverallAverageScore() ?: 0.0
+        val startTime = System.currentTimeMillis()
+        logger.debug("평균 점수 계산 시작")
+        val result = correctionRepository.calculateOverallAverageScore() ?: 0.0
+        val duration = System.currentTimeMillis() - startTime
+        logger.info("평균 점수 계산 완료: {}ms", duration)
+        return result
     }
     
     fun getDailyStatistics(): Map<String, Any> {
-        logger.debug("일별 통계 조회")
+        val startTime = System.currentTimeMillis()
+        logger.debug("일별 통계 조회 시작")
         val today = java.time.LocalDate.now()
         val startOfDay = today.atStartOfDay()
         
+        val queryStart1 = System.currentTimeMillis()
         val dailyStats = correctionRepository.getDailyStatistics(startOfDay)
+        val query1Duration = System.currentTimeMillis() - queryStart1
+        logger.info("일별 통계 기본 쿼리 완료: {}ms", query1Duration)
+        
+        val queryStart2 = System.currentTimeMillis()
         val feedbackTypes = correctionRepository.getDailyFeedbackTypeCount(startOfDay)
             .associate { it.getFeedbackType().name to it.getCount().toInt() }
+        val query2Duration = System.currentTimeMillis() - queryStart2
+        logger.info("일별 피드백 타입 쿼리 완료: {}ms", query2Duration)
+        
+        val totalDuration = System.currentTimeMillis() - startTime
+        logger.info("일별 통계 조회 전체 완료: {}ms", totalDuration)
         
         return mapOf(
             "totalCorrections" to (dailyStats?.getTotalCorrections()?.toInt() ?: 0),
@@ -127,31 +148,52 @@ class CorrectionService (
     }
     
     fun getScoreTrend(limit: Int = 20): List<Map<String, Any>> {
-        logger.debug("점수 변화 추이 조회 (최근 {}개)", limit)
+        val startTime = System.currentTimeMillis()
+        logger.debug("점수 변화 추이 조회 시작 (최근 {}개)", limit)
+        
+        val queryStart = System.currentTimeMillis()
         val corrections = correctionRepository.findTop20ByOrderByCreatedAtDesc()
             .reversed()
+        val queryDuration = System.currentTimeMillis() - queryStart
+        logger.info("점수 변화 추이 쿼리 완료: {}ms, 조회된 건수: {}", queryDuration, corrections.size)
         
-        return corrections.mapIndexed { index, correction ->
+        val result = corrections.mapIndexed { index, correction ->
             mapOf<String, Any>(
                 "order" to (index + 1),
-                "score" to correction.score!!,
-                "feedbackType" to correction.feedbackType.name,
-                "createdAt" to (correction.createdAt ?: java.time.LocalDateTime.now())
+                "score" to correction.getScore(),
+                "feedbackType" to correction.getFeedbackType().name,
+                "createdAt" to (correction.getCreatedAt() ?: java.time.LocalDateTime.now())
             )
         }
+        
+        val totalDuration = System.currentTimeMillis() - startTime
+        logger.info("점수 변화 추이 조회 전체 완료: {}ms", totalDuration)
+        return result
     }
     
     fun getErrorPatternAnalysis(): Map<String, List<String>> {
-        logger.debug("오류 패턴 분석")
-        val errorPatterns = correctionRepository.findAllErrorPatterns()
+        val startTime = System.currentTimeMillis()
+        logger.debug("오류 패턴 분석 시작")
         
-        return errorPatterns.groupBy { it.getFeedbackType() }
+        val queryStart = System.currentTimeMillis()
+        val errorPatterns = correctionRepository.findAllErrorPatterns()
+        val queryDuration = System.currentTimeMillis() - queryStart
+        logger.info("오류 패턴 쿼리 완료: {}ms, 조회된 건수: {}", queryDuration, errorPatterns.size)
+        
+        val processingStart = System.currentTimeMillis()
+        val result = errorPatterns.groupBy { it.getFeedbackType() }
             .mapKeys { it.key.name }
             .mapValues { entry ->
                 entry.value.map { it.getSentence() }
                     .distinct()
                     .take(3)  // 각 타입별로 최대 3개의 예시만
             }
+        val processingDuration = System.currentTimeMillis() - processingStart
+        logger.info("오류 패턴 데이터 처리 완료: {}ms", processingDuration)
+        
+        val totalDuration = System.currentTimeMillis() - startTime
+        logger.info("오류 패턴 분석 전체 완료: {}ms", totalDuration)
+        return result
     }
     
     fun toggleFavorite(id: Long): Correction {
@@ -165,7 +207,7 @@ class CorrectionService (
     
     fun getFavorites(): List<Correction> {
         logger.debug("즐겨찾기 목록 조회")
-        return correctionRepository.findAll().filter { it.isFavorite }
+        return correctionRepository.findByIsFavoriteTrue()
     }
     
     fun updateMemo(id: Long, memo: String?): Correction {

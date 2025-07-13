@@ -9,6 +9,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
+import org.springframework.web.servlet.resource.NoResourceFoundException
+import java.sql.SQLException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -110,6 +112,36 @@ class GlobalExceptionHandler {
         
         logger.warn("IO error: {}", ex.message)
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
+    }
+
+    @ExceptionHandler(SQLException::class)
+    fun handleSQLException(ex: SQLException, request: WebRequest): ResponseEntity<ErrorResponse> {
+        logger.error("Database error occurred: ${ex.message}", ex)
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(
+                ErrorResponse(
+                    status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    error = "Database Error",
+                    message = "Database connection or query failed",
+                    path = request.getDescription(false).removePrefix("uri=")
+                )
+            )
+    }
+
+    @ExceptionHandler(NoResourceFoundException::class)
+    fun handleNoResourceFound(ex: NoResourceFoundException, request: WebRequest): ResponseEntity<ErrorResponse> {
+        logger.warn("Resource not found: ${ex.resourcePath}")
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(
+                ErrorResponse(
+                    status = HttpStatus.NOT_FOUND.value(),
+                    error = "Resource Not Found",
+                    message = "The requested resource '${ex.resourcePath}' was not found",
+                    path = request.getDescription(false).removePrefix("uri=")
+                )
+            )
     }
 
     @ExceptionHandler(Exception::class)

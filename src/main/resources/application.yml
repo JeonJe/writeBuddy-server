@@ -23,6 +23,7 @@ spring:
         enable_lazy_load_no_trans: true
         jdbc:
           batch_size: 20
+          fetch_size: 10  # LOB 성능 향상
         order_inserts: true
         order_updates: true
   

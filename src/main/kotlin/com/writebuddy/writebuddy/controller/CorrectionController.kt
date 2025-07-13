@@ -31,8 +31,11 @@ class CorrectionController(
     }
 
     @GetMapping
-    fun getAll(): List<CorrectionResponse> {
-        val corrections = correctionService.getAll()
+    fun getAll(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int
+    ): List<CorrectionResponse> {
+        val corrections = correctionService.getAll(page, size)
         return corrections.map { CorrectionResponse.from(it) }
     }
     

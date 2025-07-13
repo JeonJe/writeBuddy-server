@@ -76,12 +76,13 @@ interface CorrectionRepository : JpaRepository<Correction, Long> {
     fun getDailyFeedbackTypeCount(@Param("startOfDay") startOfDay: LocalDateTime): List<FeedbackTypeCount>
     
     @Query("""
-        SELECT c FROM Correction c 
+        SELECT c.id as id, c.score as score, c.feedbackType as feedbackType, c.createdAt as createdAt
+        FROM Correction c 
         WHERE c.score IS NOT NULL 
         ORDER BY c.createdAt DESC
         LIMIT 20
     """)
-    fun findTop20ByOrderByCreatedAtDesc(): List<Correction>
+    fun findTop20ByOrderByCreatedAtDesc(): List<ScoreTrendProjection>
     
     @Query("""
         SELECT c.feedbackType as feedbackType, c.originSentence as sentence
@@ -90,6 +91,8 @@ interface CorrectionRepository : JpaRepository<Correction, Long> {
         ORDER BY c.createdAt DESC
     """)
     fun findAllErrorPatterns(): List<ErrorPattern>
+    
+    fun findByIsFavoriteTrue(): List<Correction>
 }
 
 interface FeedbackTypeCount {
@@ -105,4 +108,11 @@ interface DailyStats {
 interface ErrorPattern {
     fun getFeedbackType(): FeedbackType
     fun getSentence(): String
+}
+
+interface ScoreTrendProjection {
+    fun getId(): Long
+    fun getScore(): Int
+    fun getFeedbackType(): FeedbackType
+    fun getCreatedAt(): LocalDateTime?
 }
