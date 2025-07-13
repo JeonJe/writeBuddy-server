@@ -136,8 +136,8 @@ class CorrectionServiceTest {
 
             assertThat(result)
                 .hasSize(2)
-                .containsEntry(FeedbackType.GRAMMAR, 2L)
-                .containsEntry(FeedbackType.SPELLING, 1L)
+                .containsEntry("GRAMMAR", 2)
+                .containsEntry("SPELLING", 1)
         }
     }
 

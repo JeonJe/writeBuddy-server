@@ -36,28 +36,35 @@ class CorrectionController(
         return corrections.map { CorrectionResponse.from(it) }
     }
     
+    // DEPRECATED: 통합 통계 API (/statistics/users/{userId}/unified)로 대체됨
+    // 하위 호환성을 위해 유지하지만 성능상 권장하지 않음
+    @Deprecated("Use /statistics/users/{userId}/unified instead for better performance")
     @GetMapping("/statistics")
-    fun getStatistics(): Map<FeedbackType, Long> {
+    fun getStatistics(): Map<String, Int> {
         return correctionService.getFeedbackTypeStatistics()
     }
     
+    @Deprecated("Use /statistics/users/{userId}/unified instead for better performance")
     @GetMapping("/average-score")
     fun getAverageScore(): Map<String, Double> {
         val averageScore = correctionService.getAverageScore()
         return mapOf("averageScore" to averageScore)
     }
     
+    @Deprecated("Use /statistics/users/{userId}/unified instead for better performance")
     @GetMapping("/dashboard/daily")
     fun getDailyStatistics(): Map<String, Any> {
         return correctionService.getDailyStatistics()
     }
     
+    @Deprecated("Use /statistics/users/{userId}/unified instead for better performance")
     @GetMapping("/dashboard/score-trend")
     fun getScoreTrend(): Map<String, Any> {
         val trend = correctionService.getScoreTrend()
         return mapOf("scoreTrend" to trend)
     }
     
+    @Deprecated("Use /statistics/users/{userId}/unified instead for better performance")
     @GetMapping("/dashboard/error-patterns")
     fun getErrorPatterns(): Map<String, Any> {
         val patterns = correctionService.getErrorPatternAnalysis()

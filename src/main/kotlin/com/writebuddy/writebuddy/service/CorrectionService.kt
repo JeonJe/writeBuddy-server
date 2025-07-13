@@ -4,6 +4,7 @@ import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
 import com.writebuddy.writebuddy.domain.Correction
 import com.writebuddy.writebuddy.domain.FeedbackType
 import com.writebuddy.writebuddy.domain.RealExample
+import com.writebuddy.writebuddy.domain.User
 import com.writebuddy.writebuddy.repository.CorrectionRepository
 import com.writebuddy.writebuddy.repository.UserRepository
 import org.slf4j.Logger
@@ -15,6 +16,7 @@ class CorrectionService (
     private val correctionRepository: CorrectionRepository,
     private val openAiClient : OpenAiClient,
     private val userRepository: UserRepository,
+    private val userService: UserService
 ){
     private val logger: Logger = LoggerFactory.getLogger(CorrectionService::class.java)
     fun save(request: CorrectionRequest): Correction {
@@ -22,7 +24,7 @@ class CorrectionService (
     }
     
     fun save(request: CorrectionRequest, userId: Long?): Correction {
-        logger.info("교정 요청 처리 시작: {}, userId: {}", request.originSentence, userId)
+        logger.info("교정 요청 처리 시작: {}", request.originSentence)
         
         val (corrected, feedback, feedbackTypeStr, score, originTranslation, correctedTranslation) = 
             openAiClient.generateCorrectionWithTranslations(request.originSentence)
@@ -38,12 +40,15 @@ class CorrectionService (
             correctedTranslation = correctedTranslation
         )
         
-        // Associate with user if userId is provided
-        if (userId != null) {
-            val user = userRepository.findById(userId)
-                .orElseThrow { IllegalArgumentException("사용자를 찾을 수 없습니다: $userId") }
-            correction.user = user
+        // 항상 기본 사용자와 연결
+        val defaultUser = userRepository.findAll().firstOrNull() ?: run {
+            logger.info("기본 사용자 생성")
+            userRepository.save(User(
+                username = "demo_user", 
+                email = "demo@writebuddy.com"
+            ))
         }
+        correction.user = defaultUser
         
         val savedCorrection = correctionRepository.save(correction)
         logger.info("교정 결과 저장 완료: id={}, feedbackType={}", savedCorrection.id, savedCorrection.feedbackType)
@@ -53,7 +58,7 @@ class CorrectionService (
     
     // 통합 응답을 사용하여 교정과 예시를 함께 생성
     fun saveWithExamples(request: CorrectionRequest, userId: Long?): Pair<Correction, List<RealExample>> {
-        logger.info("통합 교정 요청 처리 시작: {}, userId: {}", request.originSentence, userId)
+        logger.info("통합 교정 요청 처리 시작: {}", request.originSentence)
         
         val (correctionData, examples, success) = openAiClient.generateCorrectionWithExamples(request.originSentence)
         val (corrected, feedback, feedbackTypeStr, score, originTranslation, correctedTranslation) = correctionData
@@ -72,12 +77,15 @@ class CorrectionService (
             correctedTranslation = correctedTranslation
         )
         
-        // Associate with user if userId is provided
-        if (userId != null) {
-            val user = userRepository.findById(userId)
-                .orElseThrow { IllegalArgumentException("사용자를 찾을 수 없습니다: $userId") }
-            correction.user = user
+        // 항상 기본 사용자와 연결
+        val defaultUser = userRepository.findAll().firstOrNull() ?: run {
+            logger.info("기본 사용자 생성")
+            userRepository.save(User(
+                username = "demo_user", 
+                email = "demo@writebuddy.com"
+            ))
         }
+        correction.user = defaultUser
         
         val savedCorrection = correctionRepository.save(correction)
         logger.info("교정 결과 저장 완료: id={}, feedbackType={}, 예시: {}개", 
@@ -91,67 +99,58 @@ class CorrectionService (
         return correctionRepository.findAll()
     }
     
-    fun getFeedbackTypeStatistics(): Map<FeedbackType, Long> {
+    fun getFeedbackTypeStatistics(): Map<String, Int> {
         logger.debug("피드백 타입 통계 조회")
-        return correctionRepository.findAll()
-            .groupBy { it.feedbackType }
-            .mapValues { it.value.size.toLong() }
+        return correctionRepository.getFeedbackTypeStatistics()
+            .associate { it.getFeedbackType().name to it.getCount().toInt() }
     }
     
     fun getAverageScore(): Double {
         logger.debug("평균 점수 계산")
-        val corrections = correctionRepository.findAll()
-        val scoresWithData = corrections.mapNotNull { it.score }
-        
-        return if (scoresWithData.isNotEmpty()) {
-            scoresWithData.average()
-        } else {
-            0.0
-        }
+        return correctionRepository.calculateOverallAverageScore() ?: 0.0
     }
     
     fun getDailyStatistics(): Map<String, Any> {
         logger.debug("일별 통계 조회")
-        val corrections = correctionRepository.findAll()
         val today = java.time.LocalDate.now()
-        val todayCorrections = corrections.filter { 
-            it.createdAt?.toLocalDate() == today 
-        }
+        val startOfDay = today.atStartOfDay()
+        
+        val dailyStats = correctionRepository.getDailyStatistics(startOfDay)
+        val feedbackTypes = correctionRepository.getDailyFeedbackTypeCount(startOfDay)
+            .associate { it.getFeedbackType().name to it.getCount().toInt() }
         
         return mapOf(
-            "totalCorrections" to todayCorrections.size,
-            "averageScore" to if (todayCorrections.isNotEmpty()) {
-                todayCorrections.mapNotNull { it.score }.average()
-            } else 0.0,
-            "feedbackTypes" to todayCorrections.groupBy { it.feedbackType }
-                .mapValues { it.value.size }
+            "totalCorrections" to (dailyStats?.getTotalCorrections()?.toInt() ?: 0),
+            "averageScore" to (dailyStats?.getAverageScore() ?: 0.0),
+            "feedbackTypes" to feedbackTypes
         )
     }
     
     fun getScoreTrend(limit: Int = 20): List<Map<String, Any>> {
         logger.debug("점수 변화 추이 조회 (최근 {}개)", limit)
-        val corrections = correctionRepository.findAll()
-            .filter { it.score != null }
-            .sortedByDescending { it.createdAt }
-            .take(limit)
+        val corrections = correctionRepository.findTop20ByOrderByCreatedAtDesc()
+            .reversed()
         
         return corrections.mapIndexed { index, correction ->
             mapOf<String, Any>(
-                "order" to (corrections.size - index),
+                "order" to (index + 1),
                 "score" to correction.score!!,
-                "feedbackType" to correction.feedbackType,
+                "feedbackType" to correction.feedbackType.name,
                 "createdAt" to (correction.createdAt ?: java.time.LocalDateTime.now())
             )
-        }.reversed()
+        }
     }
     
-    fun getErrorPatternAnalysis(): Map<FeedbackType, List<String>> {
+    fun getErrorPatternAnalysis(): Map<String, List<String>> {
         logger.debug("오류 패턴 분석")
-        val corrections = correctionRepository.findAll()
+        val errorPatterns = correctionRepository.findAllErrorPatterns()
         
-        return corrections.groupBy { it.feedbackType }
-            .mapValues { (_, correctionList) ->
-                correctionList.take(5).map { it.originSentence }
+        return errorPatterns.groupBy { it.getFeedbackType() }
+            .mapKeys { it.key.name }
+            .mapValues { entry ->
+                entry.value.map { it.getSentence() }
+                    .distinct()
+                    .take(3)  // 각 타입별로 최대 3개의 예시만
             }
     }
     

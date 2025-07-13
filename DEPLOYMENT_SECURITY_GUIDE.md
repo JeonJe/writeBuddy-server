@@ -79,6 +79,13 @@ spring:
   datasource:
     url: ${DATABASE_URL}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 3          # Supabase 연결 제한 대응
+      minimum-idle: 1               # 최소 연결 수
+      connection-timeout: 15000     # 15초
+      idle-timeout: 180000          # 3분
+      max-lifetime: 300000          # 5분
+      leak-detection-threshold: 30000  # 연결 누수 감지 30초
 
 openai:
   api:
@@ -104,9 +111,14 @@ cmd = "java -Dspring.profiles.active=prod -jar build/libs/WriteBuddy-0.0.1-SNAPS
 - **502 에러**: 환경변수 누락 확인 (특히 DATABASE_URL, OPENAI_API_KEY)
 - **빌드 실패**: Java 21 toolchain 확인
 - **CORS 에러**: 프론트엔드 URL에서 포트 번호 제거
-- **DB 연결 실패 (max clients reached)**: Supabase 무료 플랜은 연결 수 제한
-  - HikariCP 설정: `maximum-pool-size: 3` (프로덕션), `maximum-pool-size: 5` (기본)
-  - Supabase connection pooling 모드를 Session → Transaction으로 변경 권장
+- **DB 연결 실패 (max clients reached)**: Supabase 연결 수 제한 이슈
+  - **현재 설정**: Supabase pool size를 15 → 30으로 증가 조정 완료
+  - **HikariCP 최적화**: 
+    - 프로덕션: `maximum-pool-size: 3`, `minimum-idle: 1`
+    - 로컬 개발: `maximum-pool-size: 3`, `minimum-idle: 1`
+    - 연결 누수 감지: `leak-detection-threshold: 30000` (30초)
+    - 연결 생명주기: `idle-timeout: 180000` (3분), `max-lifetime: 300000` (5분)
+  - **총 연결 사용량**: 로컬(3) + 배포(3) = 6개 (Supabase 30개 한계 내 안전)
 
 ### 주요 API 엔드포인트
 ```bash
@@ -117,8 +129,8 @@ POST https://writebuddy.up.railway.app/corrections
 # 모든 교정 내역
 GET https://writebuddy.up.railway.app/corrections
 
-# 통계
-GET https://writebuddy.up.railway.app/corrections/statistics
+# 통합 통계 (최적화된 단일 API)
+GET https://writebuddy.up.railway.app/statistics
 ```
 
 ## ⚠️ 보안 체크리스트

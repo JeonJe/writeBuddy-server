@@ -26,8 +26,6 @@ class Word(
     val category: WordCategory = WordCategory.GENERAL,
     @Column(nullable = false)
     val isAiGenerated: Boolean = true,
-    @OneToMany(mappedBy = "word", cascade = [CascadeType.ALL])
-    val flashcards: MutableList<Flashcard> = mutableListOf()
 ) : BaseEntity()
 
 enum class WordCategory {
