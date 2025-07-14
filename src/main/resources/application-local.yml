@@ -1,4 +1,12 @@
 spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 2          # 로컬 개발용 최소 연결
+      minimum-idle: 1               # 최소 1개만 유지
+      connection-timeout: 10000     # 10초
+      idle-timeout: 180000          # 3분으로 단축
+      max-lifetime: 300000          # 5분으로 단축
+      leak-detection-threshold: 30000  # 30초로 더 엄격하게
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -10,6 +18,9 @@ logging:
     com.writebuddy: DEBUG
     org.springframework.web: DEBUG
     org.springframework.boot.web.embedded.tomcat: INFO
+    com.zaxxer.hikari: DEBUG          # HikariCP 로깅 활성화
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 # 서버 시작 정보 표시
 management:

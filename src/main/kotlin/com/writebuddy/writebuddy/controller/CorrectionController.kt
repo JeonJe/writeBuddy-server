@@ -3,11 +3,14 @@ package com.writebuddy.writebuddy.controller
 import com.writebuddy.writebuddy.controller.dto.request.CorrectionRequest
 import com.writebuddy.writebuddy.controller.dto.request.UpdateMemoRequest
 import com.writebuddy.writebuddy.controller.dto.response.CorrectionResponse
+import com.writebuddy.writebuddy.controller.dto.response.CorrectionListResponse
 import com.writebuddy.writebuddy.domain.FeedbackType
 import com.writebuddy.writebuddy.service.CorrectionService
 import com.writebuddy.writebuddy.service.RealExampleService
 import com.writebuddy.writebuddy.service.LearningAnalyticsService
 import jakarta.validation.Valid
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -17,6 +20,7 @@ class CorrectionController(
     private val realExampleService: RealExampleService,
     private val learningAnalyticsService: LearningAnalyticsService
 ) {
+    private val logger: Logger = LoggerFactory.getLogger(CorrectionController::class.java)
 
     @PostMapping()
     fun create(@RequestBody @Valid request: CorrectionRequest) : CorrectionResponse {
@@ -31,33 +35,58 @@ class CorrectionController(
     }
 
     @GetMapping
-    fun getAll(): List<CorrectionResponse> {
-        val corrections = correctionService.getAll()
-        return corrections.map { CorrectionResponse.from(it) }
+    fun getAll(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int,
+        @RequestParam(defaultValue = "false") lightweight: Boolean
+    ): Any {
+        val startTime = System.currentTimeMillis()
+        logger.info("GET /corrections 요청 시작 - page: {}, size: {}, lightweight: {}", page, size, lightweight)
+        
+        return if (lightweight) {
+            val projections = correctionService.getAllLightweight(page, size)
+            val result = projections.map { CorrectionListResponse.from(it) }
+            val duration = System.currentTimeMillis() - startTime
+            logger.info("GET /corrections (경량) 요청 완료: {}ms, 반환된 건수: {}", duration, result.size)
+            result
+        } else {
+            val corrections = correctionService.getAll(page, size)
+            val result = corrections.map { CorrectionResponse.from(it) }
+            val duration = System.currentTimeMillis() - startTime
+            logger.info("GET /corrections (전체) 요청 완료: {}ms, 반환된 건수: {}", duration, result.size)
+            result
+        }
     }
     
+    // DEPRECATED: 통합 통계 API (/statistics/users/{userId}/unified)로 대체됨
+    // 하위 호환성을 위해 유지하지만 성능상 권장하지 않음
+    @Deprecated("Use /statistics/users/{userId}/unified instead for better performance")
     @GetMapping("/statistics")
-    fun getStatistics(): Map<FeedbackType, Long> {
+    fun getStatistics(): Map<String, Int> {
         return correctionService.getFeedbackTypeStatistics()
     }
     
+    @Deprecated("Use /statistics/users/{userId}/unified instead for better performance")
     @GetMapping("/average-score")
     fun getAverageScore(): Map<String, Double> {
         val averageScore = correctionService.getAverageScore()
         return mapOf("averageScore" to averageScore)
     }
     
+    @Deprecated("Use /statistics/users/{userId}/unified instead for better performance")
     @GetMapping("/dashboard/daily")
     fun getDailyStatistics(): Map<String, Any> {
         return correctionService.getDailyStatistics()
     }
     
+    @Deprecated("Use /statistics/users/{userId}/unified instead for better performance")
     @GetMapping("/dashboard/score-trend")
     fun getScoreTrend(): Map<String, Any> {
         val trend = correctionService.getScoreTrend()
         return mapOf("scoreTrend" to trend)
     }
     
+    @Deprecated("Use /statistics/users/{userId}/unified instead for better performance")
     @GetMapping("/dashboard/error-patterns")
     fun getErrorPatterns(): Map<String, Any> {
         val patterns = correctionService.getErrorPatternAnalysis()

@@ -5,6 +5,16 @@ import jakarta.persistence.*
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 
 @Entity
+@Table(
+    indexes = [
+        Index(name = "idx_correction_user_id", columnList = "user_id"),
+        Index(name = "idx_correction_created_at", columnList = "created_at"),
+        Index(name = "idx_correction_feedback_type", columnList = "feedback_type"),
+        Index(name = "idx_correction_is_favorite", columnList = "is_favorite"),
+        Index(name = "idx_correction_score", columnList = "score"),
+        Index(name = "idx_correction_user_created", columnList = "user_id,created_at")
+    ]
+)
 @EntityListeners(AuditingEntityListener::class)
 class Correction(
     @Id

@@ -33,6 +33,7 @@ class UserController(
         return UserResponse.from(user)
     }
     
+    @Deprecated("Use /statistics/users/{userId}/unified instead for better performance")
     @GetMapping("/{userId}/statistics")
     fun getUserStatistics(@PathVariable userId: Long): Map<String, Any> {
         return userService.getUserStatistics(userId)

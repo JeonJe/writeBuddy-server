@@ -1,12 +1,18 @@
 spring:
   datasource:
     hikari:
-      maximum-pool-size: 3          # Supabase 무료 플랜 제한에 맞게 줄임
-      minimum-idle: 1               # 최소 연결 수 줄임
-      connection-timeout: 20000     # 연결 타임아웃 줄임
-      idle-timeout: 300000          # 유휴 타임아웃 줄임
-      max-lifetime: 600000          # 최대 생명주기 줄임
-      leak-detection-threshold: 60000
+      maximum-pool-size: 3          # Railway 환경에서 더 보수적으로
+      minimum-idle: 1               # 최소 1개만 유지
+      connection-timeout: 30000     # 30초로 증가 (Railway 네트워크 지연 고려)
+      idle-timeout: 120000          # 2분으로 줄임 (Supabase 타임아웃 고려)
+      max-lifetime: 180000          # 3분으로 줄임 (Supabase 연결 안정성)
+      leak-detection-threshold: 30000
+      connection-init-sql: "SELECT 1"  # 연결 유효성 검사
+      validation-timeout: 5000      # 검증 타임아웃
+      initialization-fail-timeout: 30000  # 초기화 실패 타임아웃
+      connection-test-query: "SELECT 1"  # 연결 테스트 쿼리
+      test-while-idle: true         # 유휴 상태에서 연결 테스트
+      test-on-borrow: true          # 대여 시 연결 테스트
   jpa:
     hibernate:
       ddl-auto: update
@@ -36,12 +42,14 @@ logging:
   level:
     com.writebuddy: INFO
     com.writebuddy.writebuddy.config.ApplicationStartupListener: INFO  # 시작 로그 허용
-    org.springframework.web: WARN
+    org.springframework.web: INFO   # 웹 요청 디버깅을 위해 INFO로 변경
     org.hibernate: WARN
-    org.springframework.security: WARN
+    org.springframework.security: INFO  # 보안 필터 디버깅을 위해 INFO로 변경
+    org.springframework.security.web: INFO
     com.zaxxer.hikari: INFO         # 연결 풀 정보
-    org.apache.catalina.connector: WARN  # Tomcat 연결 에러 줄이기
-    org.apache.coyote: WARN         # HTTP 프로토콜 에러 줄이기
+    org.postgresql: INFO            # PostgreSQL 드라이버 로그
+    org.apache.catalina.connector: INFO  # Tomcat 연결 디버깅
+    org.apache.coyote: INFO         # HTTP 프로토콜 디버깅
     root: INFO                      # 기본 로그 레벨
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"

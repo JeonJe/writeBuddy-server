@@ -3,13 +3,15 @@ package com.writebuddy.writebuddy.service
 import com.writebuddy.writebuddy.controller.dto.request.CreateUserRequest
 import com.writebuddy.writebuddy.domain.User
 import com.writebuddy.writebuddy.repository.UserRepository
+import com.writebuddy.writebuddy.repository.CorrectionRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
 class UserService(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val correctionRepository: CorrectionRepository
 ) {
     private val logger: Logger = LoggerFactory.getLogger(UserService::class.java)
     
@@ -53,8 +55,30 @@ class UserService(
             "totalCorrections" to corrections.size,
             "averageScore" to if (scoresWithData.isNotEmpty()) scoresWithData.average() else 0.0,
             "favoriteCount" to corrections.count { it.isFavorite },
-            "feedbackTypeDistribution" to corrections.groupBy { it.feedbackType }
+            "feedbackTypeDistribution" to corrections.groupBy { it.feedbackType.name }
                 .mapValues { it.value.size }
         )
+    }
+    
+    fun getAllUsersStatistics(): Map<String, Any> {
+        logger.debug("전체 사용자 통계 조회")
+        
+        // 기본 사용자 존재 확인 및 생성
+        val defaultUser = ensureDefaultUser()
+        
+        // 기본 사용자의 통계를 조회
+        return getUserStatistics(defaultUser.id)
+    }
+    
+    fun ensureDefaultUser(): User {
+        // 첫 번째 사용자를 찾거나 생성
+        return userRepository.findAll().firstOrNull() ?: run {
+            logger.info("기본 사용자 생성")
+            val defaultUser = User(
+                username = "demo_user",
+                email = "demo@writebuddy.com"
+            )
+            userRepository.save(defaultUser)
+        }
     }
 }
