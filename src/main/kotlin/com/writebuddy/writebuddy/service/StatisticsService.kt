@@ -34,7 +34,10 @@ class StatisticsService(
         val dailyStatistics = UnifiedStatisticsResponse.DailyStatistics(
             totalCorrections = dailyStats["totalCorrections"] as Int,
             averageScore = dailyStats["averageScore"] as Double,
-            feedbackTypes = dailyStats["feedbackTypes"] as? Map<String, Int> ?: emptyMap()
+            feedbackTypes = (dailyStats["feedbackTypes"] as? Map<*, *>)
+                ?.mapKeys { it.key.toString() }
+                ?.mapValues { it.value as Int }
+                ?: emptyMap()
         )
         
         val scoreTrendStart = System.currentTimeMillis()
