@@ -77,6 +77,44 @@ com.writebuddy.writebuddy
 - **연결 풀 최적화**: HikariCP 설정으로 Supabase 프리티어 대응
 - **타임아웃 방지**: 연결 누수 감지 및 빠른 해제
 
+## 📚 Documentation
+
+### 📋 작업 진행
+- [작업 진행 현황](./docs/progress/WORK_PROGRESS.md) - 프로젝트 전체 진행 상태
+
+### 🏗️ 아키텍처 & 설계
+- [비동기 처리 구현](./docs/architecture/ASYNC_IMPLEMENTATION.md) - 동시성 처리 및 성능 최적화
+
+### 💻 개발 가이드
+- [프론트엔드 개발 가이드](./docs/development/FRONTEND_GUIDE.md) - React 통합 가이드
+
+### 🚀 운영 & 배포
+- [배포 및 보안 가이드](./docs/operations/DEPLOYMENT_SECURITY.md) - 프로덕션 배포 절차
+
+## 🚀 빠른 시작
+
+### 환경 설정
+```bash
+# 환경변수 설정
+export OPENAI_API_KEY=your-key
+export GOOGLE_CLIENT_ID=your-id
+export GOOGLE_CLIENT_SECRET=your-secret
+```
+
+### 빌드 및 실행
+```bash
+# 테스트 실행
+./gradlew test
+
+# 애플리케이션 실행
+./gradlew bootRun
+
+# 빌드
+./gradlew build
+```
+
+서버는 http://localhost:7071 에서 실행됩니다.
+
 ## 📜 라이선스
 
 이 프로젝트는 MIT 라이선스 하에 제공됩니다.

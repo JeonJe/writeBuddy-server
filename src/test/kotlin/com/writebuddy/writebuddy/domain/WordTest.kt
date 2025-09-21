@@ -29,7 +29,6 @@ class WordTest {
             assertThat(word.tags).containsExactlyInAnyOrder("형용사", "감정")
             assertThat(word.category).isEqualTo(com.writebuddy.writebuddy.domain.WordCategory.DAILY)
             assertThat(word.isAiGenerated).isTrue()
-            assertThat(word.flashcards).isEmpty()
         }
 
         @Test

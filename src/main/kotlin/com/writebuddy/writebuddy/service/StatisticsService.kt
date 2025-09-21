@@ -17,7 +17,6 @@ class StatisticsService(
         val totalStartTime = System.currentTimeMillis()
         logger.info("통합 통계 조회 시작: 교정 데이터 기반")
         
-        // 1. Correction Statistics
         val correctionStatsStart = System.currentTimeMillis()
         val feedbackTypeStats = correctionService.getFeedbackTypeStatistics()
         val avgScore = correctionService.getAverageScore()
@@ -28,7 +27,6 @@ class StatisticsService(
         val correctionStatsDuration = System.currentTimeMillis() - correctionStatsStart
         logger.info("교정 통계 섹션 완료: {}ms", correctionStatsDuration)
         
-        // 2. Dashboard Data
         val dashboardStart = System.currentTimeMillis()
         val dailyStats = correctionService.getDailyStatistics()
         val dailyStatistics = UnifiedStatisticsResponse.DailyStatistics(

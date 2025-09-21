@@ -41,8 +41,7 @@ class StatisticsControllerTest {
             mockMvc.perform(get("/statistics"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType("application/json"))
-                .andExpect(jsonPath("$.userStatistics.totalCorrections").value(25))
-                .andExpect(jsonPath("$.userStatistics.averageScore").value(7.8))
+                .andExpect(jsonPath("$.correctionStatistics.averageScore").value(7.2))
                 .andExpect(jsonPath("$.dashboardData.dailyStatistics.totalCorrections").value(5))
                 .andExpect(jsonPath("$.generatedAt").exists())
         }
@@ -50,13 +49,6 @@ class StatisticsControllerTest {
     }
 
     private fun createMockUnifiedStatisticsResponse(): UnifiedStatisticsResponse {
-        val userStatistics = UnifiedStatisticsResponse.UserStatistics(
-            totalCorrections = 25,
-            averageScore = 7.8,
-            favoriteCount = 8,
-            feedbackTypeDistribution = mapOf("GRAMMAR" to 15, "SPELLING" to 6, "STYLE" to 4)
-        )
-
         val correctionStatistics = UnifiedStatisticsResponse.CorrectionStatistics(
             feedbackTypeStatistics = mapOf("GRAMMAR" to 15, "SPELLING" to 8),
             averageScore = 7.2
@@ -89,7 +81,6 @@ class StatisticsControllerTest {
         )
 
         return UnifiedStatisticsResponse(
-            userStatistics = userStatistics,
             correctionStatistics = correctionStatistics,
             dashboardData = dashboardData,
             generatedAt = LocalDateTime.of(2025, 7, 13, 14, 30, 0)

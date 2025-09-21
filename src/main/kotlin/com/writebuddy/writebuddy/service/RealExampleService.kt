@@ -16,11 +16,7 @@ class RealExampleService(
     private val logger: Logger = LoggerFactory.getLogger(RealExampleService::class.java)
     
     
-    // 교정된 문장과 관련된 실제 사용 예시 찾기
     fun findRelatedExamples(correctedSentence: String): List<RealExample> {
-        logger.debug("교정된 문장과 관련된 예시 생성: {}", correctedSentence)
-        
-        // OpenAI로 실시간 예시 생성
         return generateExamplesWithAI(correctedSentence)
     }
     
@@ -32,7 +28,6 @@ class RealExampleService(
             logger.info("OpenAI로 실제 사용 예시 생성 요청: {}", correctedSentence)
             val response = openAiClient.sendChatRequest(systemPrompt, userPrompt)
             
-            // JSON 응답 파싱
             val jsonNode = objectMapper.readTree(response)
             val examplesNode = jsonNode.get("examples")
             
@@ -70,7 +65,6 @@ class RealExampleService(
             
         } catch (e: Exception) {
             logger.error("OpenAI 예시 생성 실패: {}", e.message)
-            // 실패 시 빈 목록 반환
             emptyList()
         }
     }

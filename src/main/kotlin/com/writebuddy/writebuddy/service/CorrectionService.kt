@@ -11,13 +11,15 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import java.util.concurrent.TimeUnit
 
 @Service
 class CorrectionService (
     private val correctionRepository: CorrectionRepository,
     private val openAiClient : OpenAiClient,
     private val userRepository: UserRepository,
-    private val userService: UserService
+    private val userService: UserService,
+    private val asyncCorrectionService: AsyncCorrectionService
 ){
     private val logger: Logger = LoggerFactory.getLogger(CorrectionService::class.java)
     fun save(request: CorrectionRequest): Correction {
@@ -41,11 +43,9 @@ class CorrectionService (
             correctedTranslation = correctedTranslation
         )
         
-        // 항상 기본 사용자와 연결
         val defaultUser = userRepository.findAll().firstOrNull() ?: run {
-            logger.info("기본 사용자 생성")
             userRepository.save(User(
-                username = "demo_user", 
+                username = "demo_user",
                 email = "demo@writebuddy.com"
             ))
         }
@@ -57,7 +57,6 @@ class CorrectionService (
         return savedCorrection
     }
     
-    // 통합 응답을 사용하여 교정과 예시를 함께 생성
     fun saveWithExamples(request: CorrectionRequest, userId: Long?): Pair<Correction, List<RealExample>> {
         logger.info("통합 교정 요청 처리 시작: {}", request.originSentence)
         
@@ -78,11 +77,10 @@ class CorrectionService (
             correctedTranslation = correctedTranslation
         )
         
-        // 항상 기본 사용자와 연결
         val defaultUser = userRepository.findAll().firstOrNull() ?: run {
             logger.info("기본 사용자 생성")
             userRepository.save(User(
-                username = "demo_user", 
+                username = "demo_user",
                 email = "demo@writebuddy.com"
             ))
         }
@@ -95,9 +93,60 @@ class CorrectionService (
         return Pair(savedCorrection, examples)
     }
 
+    fun saveWithExamplesAsync(request: CorrectionRequest, userId: Long?): Pair<Correction, List<RealExample>> {
+        val totalStartTime = System.currentTimeMillis()
+        logger.info("비동기 병렬 교정 요청 시작: {}", request.originSentence)
+
+        try {
+            val future = asyncCorrectionService.generateCorrectionWithExamplesParallel(request.originSentence)
+            val (correctionData, examples) = future[15, TimeUnit.SECONDS]
+            val (corrected, feedback, feedbackTypeStr, score, originTranslation, correctedTranslation) = correctionData
+
+            val processingTime = System.currentTimeMillis() - totalStartTime
+            logger.info("비동기 처리 완료: {}ms (기존 동기 대비 {}ms 단축)",
+                       processingTime, (20000 - processingTime).coerceAtLeast(0))
+
+            val feedbackType = parseFeedbackType(feedbackTypeStr)
+
+            val correction = Correction(
+                originSentence = request.originSentence,
+                correctedSentence = corrected,
+                feedback = feedback,
+                feedbackType = feedbackType,
+                score = score,
+                originTranslation = originTranslation,
+                correctedTranslation = correctedTranslation
+            )
+
+            val defaultUser = userRepository.findAll().firstOrNull() ?: run {
+                logger.info("기본 사용자 생성")
+                userRepository.save(User(
+                    username = "demo_user",
+                    email = "demo@writebuddy.com"
+                ))
+            }
+            correction.user = defaultUser
+
+            val savedCorrection = correctionRepository.save(correction)
+
+            val totalTime = System.currentTimeMillis() - totalStartTime
+            logger.info("전체 비동기 처리 완료: {}ms, id={}, 예시: {}개, 성능 개선: {}%",
+                       totalTime, savedCorrection.id, examples.size,
+                       ((20000.0 - totalTime) / 20000.0 * 100).coerceAtLeast(0.0).toInt())
+
+            return Pair(savedCorrection, examples)
+
+        } catch (e: java.util.concurrent.TimeoutException) {
+            logger.error("비동기 처리 타임아웃 (15초), 동기 방식으로 폴백")
+            return saveWithExamples(request, userId)
+        } catch (e: Exception) {
+            logger.error("비동기 처리 실패: {}, 동기 방식으로 폴백", e.message)
+            return saveWithExamples(request, userId)
+        }
+    }
+
     fun getAll(page: Int = 0, size: Int = 20): List<Correction> {
         val startTime = System.currentTimeMillis()
-        logger.debug("교정 목록 조회 시작 (전체 데이터) - page: {}, size: {}", page, size)
         
         val result = correctionRepository.findAll(
             PageRequest.of(page, size)
@@ -110,7 +159,6 @@ class CorrectionService (
     
     fun getAllLightweight(page: Int = 0, size: Int = 20): List<com.writebuddy.writebuddy.repository.CorrectionLightProjection> {
         val startTime = System.currentTimeMillis()
-        logger.debug("교정 목록 조회 시작 (경량 데이터) - page: {}, size: {}", page, size)
         
         val result = correctionRepository.findAllLightweight(
             PageRequest.of(page, size)
@@ -123,7 +171,6 @@ class CorrectionService (
     
     fun getFeedbackTypeStatistics(): Map<String, Int> {
         val startTime = System.currentTimeMillis()
-        logger.debug("피드백 타입 통계 조회 시작")
         val result = correctionRepository.getFeedbackTypeStatistics()
             .associate { it.getFeedbackType().name to it.getCount().toInt() }
         val duration = System.currentTimeMillis() - startTime
@@ -133,7 +180,6 @@ class CorrectionService (
     
     fun getAverageScore(): Double {
         val startTime = System.currentTimeMillis()
-        logger.debug("평균 점수 계산 시작")
         val result = correctionRepository.calculateOverallAverageScore() ?: 0.0
         val duration = System.currentTimeMillis() - startTime
         logger.info("평균 점수 계산 완료: {}ms", duration)
@@ -142,7 +188,6 @@ class CorrectionService (
     
     fun getDailyStatistics(): Map<String, Any> {
         val startTime = System.currentTimeMillis()
-        logger.debug("일별 통계 조회 시작")
         val today = java.time.LocalDate.now()
         val startOfDay = today.atStartOfDay()
         
@@ -169,7 +214,6 @@ class CorrectionService (
     
     fun getScoreTrend(limit: Int = 20): List<Map<String, Any>> {
         val startTime = System.currentTimeMillis()
-        logger.debug("점수 변화 추이 조회 시작 (최근 {}개)", limit)
         
         val queryStart = System.currentTimeMillis()
         val corrections = correctionRepository.findTop20ByOrderByCreatedAtDesc()
@@ -193,7 +237,6 @@ class CorrectionService (
     
     fun getErrorPatternAnalysis(): Map<String, List<String>> {
         val startTime = System.currentTimeMillis()
-        logger.debug("오류 패턴 분석 시작")
         
         val queryStart = System.currentTimeMillis()
         val errorPatterns = correctionRepository.findAllErrorPatterns()
@@ -217,7 +260,6 @@ class CorrectionService (
     }
     
     fun toggleFavorite(id: Long): Correction {
-        logger.debug("즐겨찾기 토글: id={}", id)
         val correction = correctionRepository.findById(id)
             .orElseThrow { IllegalArgumentException("교정 결과를 찾을 수 없습니다: $id") }
         
@@ -226,12 +268,10 @@ class CorrectionService (
     }
     
     fun getFavorites(): List<Correction> {
-        logger.debug("즐겨찾기 목록 조회")
         return correctionRepository.findByIsFavoriteTrue()
     }
     
     fun updateMemo(id: Long, memo: String?): Correction {
-        logger.debug("메모 업데이트: id={}, memo={}", id, memo)
         val correction = correctionRepository.findById(id)
             .orElseThrow { IllegalArgumentException("교정 결과를 찾을 수 없습니다: $id") }
         

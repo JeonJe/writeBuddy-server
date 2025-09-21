@@ -34,17 +34,14 @@ class UserService(
     }
     
     fun getUserByUsername(username: String): User? {
-        logger.debug("사용자 조회: username={}", username)
         return userRepository.findByUsername(username).orElse(null)
     }
     
     fun getAllUsers(): List<User> {
-        logger.debug("전체 사용자 목록 조회")
         return userRepository.findAll()
     }
     
     fun getUserStatistics(userId: Long): Map<String, Any> {
-        logger.debug("사용자 통계 조회: userId={}", userId)
         val user = userRepository.findById(userId)
             .orElseThrow { IllegalArgumentException("사용자를 찾을 수 없습니다: $userId") }
         
@@ -61,17 +58,11 @@ class UserService(
     }
     
     fun getAllUsersStatistics(): Map<String, Any> {
-        logger.debug("전체 사용자 통계 조회")
-        
-        // 기본 사용자 존재 확인 및 생성
         val defaultUser = ensureDefaultUser()
-        
-        // 기본 사용자의 통계를 조회
         return getUserStatistics(defaultUser.id)
     }
     
     fun ensureDefaultUser(): User {
-        // 첫 번째 사용자를 찾거나 생성
         return userRepository.findAll().firstOrNull() ?: run {
             logger.info("기본 사용자 생성")
             val defaultUser = User(

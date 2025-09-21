@@ -16,7 +16,6 @@ class ApplicationStartupListener : ApplicationListener<WebServerInitializedEvent
         val profiles = environment.activeProfiles
         val activeProfile = if (profiles.isNotEmpty()) profiles.joinToString(", ") else "default"
         
-        // Railway 환경 변수들
         val railwayPublicDomain = environment.getProperty("RAILWAY_PUBLIC_DOMAIN")
         val railwayStaticUrl = environment.getProperty("RAILWAY_STATIC_URL") 
         val railwayEnvironment = environment.getProperty("RAILWAY_ENVIRONMENT")
@@ -51,7 +50,6 @@ class ApplicationStartupListener : ApplicationListener<WebServerInitializedEvent
             appendLine("$separator\n")
         }
         
-        // 콘솔과 로그 파일 모두에 출력
         println(startupMessage)
         logger.info("WriteBuddy Application Started - Port: $port, Profile: $activeProfile, Railway: $isRailway")
     }

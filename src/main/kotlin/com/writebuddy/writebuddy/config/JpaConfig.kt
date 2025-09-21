@@ -11,7 +11,6 @@ import java.util.*
 class JpaConfig {
     @Bean
     fun auditorProvider(): AuditorAware<String> {
-        // 임시 하드코딩 (나중에 Security 연동 가능)
         return AuditorAware { Optional.of("system") }
     }
 }

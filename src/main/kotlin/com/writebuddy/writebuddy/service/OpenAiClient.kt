@@ -53,7 +53,6 @@ class OpenAiClient(
             val content = response?.choices?.firstOrNull()?.message?.content ?: ""
             logger.info("OpenAI response received: {}", content.take(200))
             
-            // 새로운 통합 파싱 시도
             val (correctionData, _, success) = responseParser.parseIntegratedResponse(content)
             if (success) {
                 logger.info("통합 JSON 응답 파싱 성공")
@@ -69,7 +68,6 @@ class OpenAiClient(
         }
     }
     
-    // 교정과 예시를 함께 생성하는 새로운 메서드
     fun generateCorrectionWithExamples(origin: String): Triple<Sextuple<String, String, String, Int, String?, String?>, List<RealExample>, Boolean> {
         return try {
             logger.info("Requesting OpenAI correction with examples for: {}", origin)

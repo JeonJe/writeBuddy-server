@@ -94,7 +94,6 @@ class GlobalExceptionHandler {
         ex: java.io.EOFException,
         request: WebRequest
     ): ResponseEntity<Void> {
-        // 클라이언트 연결 끊김은 로그하지 않고 조용히 처리
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
     }
 
@@ -103,7 +102,6 @@ class GlobalExceptionHandler {
         ex: java.io.IOException,
         request: WebRequest
     ): ResponseEntity<Void> {
-        // 일반적인 IO 예외는 DEBUG 레벨로만 로그
         if (ex.message?.contains("Broken pipe") == true || 
             ex.message?.contains("Connection reset") == true) {
             logger.debug("Client connection issue: {}", ex.message)
@@ -149,7 +147,6 @@ class GlobalExceptionHandler {
         ex: Exception,
         request: WebRequest
     ): ResponseEntity<ErrorResponse> {
-        // 연결 관련 예외는 조용히 처리
         if (ex.cause is java.io.EOFException || 
             ex.message?.contains("Broken pipe") == true) {
             logger.debug("Client connection terminated: {}", ex.message)

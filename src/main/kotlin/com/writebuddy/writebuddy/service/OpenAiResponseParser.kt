@@ -11,11 +11,8 @@ class OpenAiResponseParser(
 ) {
     
     companion object {
-        // API Role Constants
         const val ROLE_SYSTEM = "system"
         const val ROLE_USER = "user"
-        
-        // Response Parsing Prefixes
         const val CORRECTED_PREFIX_KOR = "교정문:"
         const val FEEDBACK_PREFIX_KOR = "피드백:"
         const val TYPE_PREFIX_KOR = "유형:"
@@ -23,7 +20,6 @@ class OpenAiResponseParser(
         const val ORIGIN_TRANSLATION_PREFIX_KOR = "원문번역:"
         const val CORRECTED_TRANSLATION_PREFIX_KOR = "교정번역:"
         
-        // Default Values
         const val DEFAULT_FEEDBACK_TYPE = "Grammar"
         const val FALLBACK_FEEDBACK_TYPE = "SYSTEM"
         const val DEFAULT_SCORE = 5
@@ -63,10 +59,8 @@ class OpenAiResponseParser(
         return Sextuple(corrected, feedback, feedbackType, score, originTranslation, correctedTranslation)
     }
     
-    // 새로운 JSON 형식 응답 파싱 (교정 + 예시 통합)
     fun parseIntegratedResponse(content: String): Triple<Sextuple<String, String, String, Int, String?, String?>, List<RealExample>, Boolean> {
         return try {
-            // JSON 파싱 시도
             val jsonNode = objectMapper.readTree(content)
             
             val corrected = jsonNode.get("correctedSentence")?.asText() ?: ""
@@ -78,7 +72,6 @@ class OpenAiResponseParser(
             
             val correctionData = Sextuple(corrected, feedback, feedbackType, score, originTranslation, correctedTranslation)
             
-            // 예시 파싱
             val examples = mutableListOf<RealExample>()
             val examplesNode = jsonNode.get("relatedExamples")
             if (examplesNode != null && examplesNode.isArray) {
@@ -97,7 +90,6 @@ class OpenAiResponseParser(
                         )
                         examples.add(example)
                     } catch (e: Exception) {
-                        // 개별 예시 파싱 실패시 건너뛰기
                         continue
                     }
                 }
@@ -105,7 +97,6 @@ class OpenAiResponseParser(
             
             Triple(correctionData, examples, true)
         } catch (e: Exception) {
-            // JSON 파싱 실패시 기존 방식으로 fallback
             val correctionData = parseResponseWithTranslations(content)
             Triple(correctionData, emptyList(), false)
         }
