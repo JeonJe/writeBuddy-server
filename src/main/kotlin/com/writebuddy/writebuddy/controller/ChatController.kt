@@ -2,7 +2,7 @@ package com.writebuddy.writebuddy.controller
 
 import com.writebuddy.writebuddy.controller.dto.request.ChatRequest
 import com.writebuddy.writebuddy.controller.dto.response.ChatResponse
-import com.writebuddy.writebuddy.service.OpenAiClient
+import com.writebuddy.writebuddy.service.SpringAiChatService
 import jakarta.validation.Valid
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/chat")
 class ChatController(
-    private val openAiClient: OpenAiClient
+    private val springAiChatService: SpringAiChatService
 ) {
     private val logger: Logger = LoggerFactory.getLogger(ChatController::class.java)
 
@@ -23,7 +23,7 @@ class ChatController(
     fun chat(@Valid @RequestBody request: ChatRequest): ResponseEntity<ChatResponse> {
         logger.info("영어 학습 채팅 요청: {}", request.question)
         
-        val answer = openAiClient.generateChatResponse(request.question)
+        val answer = springAiChatService.generateChatResponse(request.question)
         
         val response = ChatResponse(
             question = request.question,

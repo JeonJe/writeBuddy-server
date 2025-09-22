@@ -1,6 +1,19 @@
 spring:
   application:
     name: WriteBuddy
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o-mini
+          temperature: 0.3
+      retry:
+        max-attempts: 3
+        backoff:
+          initial-interval: 1s
+          multiplier: 2
   
   datasource:
     url: ${DATABASE_URL}

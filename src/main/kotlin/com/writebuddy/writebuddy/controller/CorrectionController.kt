@@ -5,7 +5,6 @@ import com.writebuddy.writebuddy.controller.dto.request.UpdateMemoRequest
 import com.writebuddy.writebuddy.controller.dto.response.CorrectionResponse
 import com.writebuddy.writebuddy.controller.dto.response.CorrectionListResponse
 import com.writebuddy.writebuddy.service.CorrectionService
-import com.writebuddy.writebuddy.service.LearningAnalyticsService
 import jakarta.validation.Valid
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -14,8 +13,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/corrections")
 class CorrectionController(
-    private val correctionService: CorrectionService,
-    private val learningAnalyticsService: LearningAnalyticsService
+    private val correctionService: CorrectionService
 ) {
     private val logger: Logger = LoggerFactory.getLogger(CorrectionController::class.java)
 
@@ -43,25 +41,10 @@ class CorrectionController(
     @GetMapping
     fun getAll(
         @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "20") size: Int,
-        @RequestParam(defaultValue = "false") lightweight: Boolean
-    ): Any {
-        val startTime = System.currentTimeMillis()
-        logger.info("GET /corrections 요청 시작 - page: {}, size: {}, lightweight: {}", page, size, lightweight)
-        
-        return if (lightweight) {
-            val projections = correctionService.getAllLightweight(page, size)
-            val result = projections.map { CorrectionListResponse.from(it) }
-            val duration = System.currentTimeMillis() - startTime
-            logger.info("GET /corrections (경량) 요청 완료: {}ms, 반환된 건수: {}", duration, result.size)
-            result
-        } else {
-            val corrections = correctionService.getAll(page, size)
-            val result = corrections.map { CorrectionResponse.from(it) }
-            val duration = System.currentTimeMillis() - startTime
-            logger.info("GET /corrections (전체) 요청 완료: {}ms, 반환된 건수: {}", duration, result.size)
-            result
-        }
+        @RequestParam(defaultValue = "20") size: Int
+    ): List<CorrectionListResponse> {
+        val projections = correctionService.getAllLightweight(page, size)
+        return projections.map { CorrectionListResponse.from(it) }
     }
     
 
@@ -83,10 +66,5 @@ class CorrectionController(
         return CorrectionResponse.from(correction)
     }
     
-    @GetMapping("/users/{userId}/good-expressions")
-    fun getUserGoodExpressions(@PathVariable userId: Long): List<CorrectionResponse> {
-        val goodExpressions = learningAnalyticsService.getUserGoodExpressions(userId)
-        return goodExpressions.map { CorrectionResponse.from(it) }
-    }
     
 }

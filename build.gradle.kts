@@ -22,6 +22,7 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven { url = uri("https://repo.spring.io/milestone") }
 }
 
 dependencies {
@@ -34,6 +35,10 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.retry:spring-retry")
 	implementation("me.paulschwarz:spring-dotenv:4.0.0")
+
+	// Spring AI dependencies
+	implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter:1.0.0-M4")
+	implementation("org.springframework.ai:spring-ai-retry:1.0.0-M4")
 
 
 	compileOnly("org.projectlombok:lombok")
