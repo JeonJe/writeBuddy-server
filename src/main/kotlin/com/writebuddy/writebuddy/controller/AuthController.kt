@@ -1,46 +1,49 @@
 package com.writebuddy.writebuddy.controller
 
-import com.writebuddy.writebuddy.controller.dto.response.UserResponse
-import com.writebuddy.writebuddy.repository.UserRepository
+import com.writebuddy.writebuddy.controller.dto.request.LoginRequest
+import com.writebuddy.writebuddy.controller.dto.request.RefreshTokenRequest
+import com.writebuddy.writebuddy.controller.dto.response.TokenResponse
+import com.writebuddy.writebuddy.service.AuthService
+import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/auth")
 class AuthController(
-    private val userRepository: UserRepository
+    private val authService: AuthService
 ) {
+    private val logger = LoggerFactory.getLogger(AuthController::class.java)
 
-    @GetMapping("/user")
-    fun getCurrentUser(@AuthenticationPrincipal oidcUser: OidcUser?): ResponseEntity<UserResponse> {
-        if (oidcUser == null) {
-            return ResponseEntity.ok(null)
-        }
-        
-        val provider = oidcUser.issuer.toString().substringAfterLast("/")
-        val providerId = oidcUser.subject
-        
-        val user = userRepository.findByOauthProviderAndOauthProviderId(provider, providerId)
-            ?: return ResponseEntity.notFound().build()
-            
-        return ResponseEntity.ok(UserResponse.from(user))
+    /**
+     * 이메일과 비밀번호 기반 로그인
+     */
+    @PostMapping("/login")
+    fun login(@RequestBody @Valid request: LoginRequest): TokenResponse {
+        logger.info("로그인 요청: email={}", request.email)
+        return authService.login(request.email, request.password)
     }
-    
-    @GetMapping("/status")
-    fun getAuthStatus(@AuthenticationPrincipal oidcUser: OidcUser?): ResponseEntity<Map<String, Any?>> {
-        val isAuthenticated = oidcUser != null
-        val response = mapOf(
-            "authenticated" to isAuthenticated,
-            "user" to if (isAuthenticated && oidcUser != null) {
-                mapOf(
-                    "name" to (oidcUser.fullName ?: oidcUser.givenName),
-                    "email" to oidcUser.email,
-                    "picture" to oidcUser.picture
-                )
-            } else null
-        )
-        return ResponseEntity.ok(response)
+
+    /**
+     * Access Token 갱신
+     */
+    @PostMapping("/refresh")
+    fun refresh(@RequestBody @Valid request: RefreshTokenRequest): TokenResponse {
+        logger.info("토큰 갱신 요청")
+        return authService.refreshAccessToken(request.refreshToken)
+    }
+
+    /**
+     * 로그아웃
+     */
+    @PostMapping("/logout")
+    fun logout(@AuthenticationPrincipal userId: Long?): ResponseEntity<Void> {
+        if (userId != null) {
+            logger.info("로그아웃 요청: userId={}", userId)
+            authService.logout(userId)
+        }
+        return ResponseEntity.noContent().build()
     }
 }

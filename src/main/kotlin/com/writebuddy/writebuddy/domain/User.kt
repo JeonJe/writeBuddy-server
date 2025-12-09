@@ -2,6 +2,7 @@ package com.writebuddy.writebuddy.domain
 
 import com.writebuddy.writebuddy.domain.common.BaseEntity
 import jakarta.persistence.*
+import org.hibernate.annotations.BatchSize
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 
 @Entity
@@ -13,13 +14,44 @@ class User(
     val id: Long = 0,
     @Column(unique = true)
     val username: String,
+
+    @Column(nullable = false)
     val email: String,
-    @Column(name = "oauth_provider")
-    val oauthProvider: String? = null,
-    @Column(name = "oauth_provider_id")
-    val oauthProviderId: String? = null,
-    @Column(name = "profile_image_url")
-    val profileImageUrl: String? = null,
+
+    @Column(nullable = true)
+    var password: String? = null,
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = [JoinColumn(name = "user_id")])
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    @BatchSize(size = 100)
+    val roles: MutableSet<UserRole> = mutableSetOf(UserRole.USER),
+
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL])
     val corrections: MutableList<Correction> = mutableListOf()
-) : BaseEntity()
+) : BaseEntity() {
+
+    fun hasRole(role: UserRole): Boolean {
+        return roles.contains(role)
+    }
+
+    fun addRole(role: UserRole) {
+        roles.add(role)
+    }
+
+    fun isAdmin(): Boolean {
+        return hasRole(UserRole.ADMIN)
+    }
+
+    fun addCorrection(correction: Correction) {
+        correction.assignToUser(this)
+        corrections.add(correction)
+    }
+
+    fun updatePassword(encodedPassword: String) {
+        password = encodedPassword
+    }
+
+    fun hasPassword(): Boolean = password != null
+}

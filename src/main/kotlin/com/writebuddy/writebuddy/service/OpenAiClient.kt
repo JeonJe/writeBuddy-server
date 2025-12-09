@@ -115,11 +115,17 @@ class OpenAiClient(
     }
     
     private fun createRequest(messages: List<Map<String, String>>): Map<String, Any> {
-        return mapOf(
+        val request = mutableMapOf<String, Any>(
             "model" to openAiProperties.api.model,
-            "messages" to messages,
-            "temperature" to openAiProperties.api.temperature
+            "messages" to messages
         )
+        
+        // GPT-5 models don't support temperature parameter
+        if (!openAiProperties.api.model.startsWith("gpt-5")) {
+            request["temperature"] = openAiProperties.api.temperature
+        }
+        
+        return request
     }
 
     

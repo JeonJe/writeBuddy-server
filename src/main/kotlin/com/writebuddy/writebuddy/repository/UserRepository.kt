@@ -8,6 +8,7 @@ import java.util.*
 @Repository
 interface UserRepository : JpaRepository<User, Long> {
     fun findByUsername(username: String): Optional<User>
+    fun findByEmail(email: String): User?
     fun existsByUsername(username: String): Boolean
-    fun findByOauthProviderAndOauthProviderId(provider: String, providerId: String): User?
+    fun existsByEmail(email: String): Boolean
 }

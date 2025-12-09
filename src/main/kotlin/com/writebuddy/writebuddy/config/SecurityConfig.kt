@@ -1,19 +1,21 @@
 package com.writebuddy.writebuddy.config
 
+import com.writebuddy.writebuddy.security.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService
-import org.springframework.security.oauth2.core.oidc.user.OidcUser
+import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val corsConfig: CorsConfig
+    private val corsConfig: CorsConfig,
+    private val jwtAuthenticationFilter: JwtAuthenticationFilter
 ) {
 
     @Bean
@@ -21,30 +23,30 @@ class SecurityConfig(
         http
             .cors { it.configurationSource(corsConfig.corsConfigurationSource()) }
             .csrf { it.disable() }
+            .sessionManagement {
+                it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            }
             .authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers("/login/**", "/oauth2/**", "/error", "/h2-console/**").permitAll()
+                    // Public endpoints
+                    .requestMatchers("/auth/**", "/users/register", "/error", "/h2-console/**").permitAll()
                     .requestMatchers("/health/**").permitAll()
+
+                    // Temporarily permit all for development
                     .requestMatchers("/corrections/**", "/examples/**", "/chat", "/statistics").permitAll()
-                    .requestMatchers("/corrections/users/**", "/users/**", "/analytics/**").authenticated()
-                    .anyRequest().permitAll()
+
+                    // User endpoints (JWT required)
+                    .requestMatchers("/corrections/users/**", "/users/**", "/analytics/**").hasRole("USER")
+
+                    // Admin endpoints
+                    .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                    .anyRequest().authenticated()
             }
-            .oauth2Login { oauth2 ->
-                oauth2
-                    .loginPage("/login")
-                    .defaultSuccessUrl("/login/success", true)
-                    .failureUrl("/login/failure")
-                    .userInfoEndpoint { userInfo ->
-                        userInfo.oidcUserService(oidcUserService())
-                    }
-            }
-            .logout { logout ->
-                logout
-                    .logoutUrl("/logout")
-                    .logoutSuccessUrl("/")
-                    .invalidateHttpSession(true)
-                    .clearAuthentication(true)
-            }
+            .addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter::class.java
+            )
             .headers { headers ->
                 headers.frameOptions { it.disable() }
             }
@@ -53,8 +55,8 @@ class SecurityConfig(
     }
 
     @Bean
-    fun oidcUserService(): OAuth2UserService<OidcUserRequest, OidcUser> {
-        return OidcUserService()
+    fun passwordEncoder(): PasswordEncoder {
+        return BCryptPasswordEncoder()
     }
 
 }

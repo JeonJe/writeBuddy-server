@@ -65,6 +65,12 @@ server:
       max: 200                      # 최대 스레드 수
       min-spare: 10                 # 최소 스레드 수
 
+jwt:
+  secret: ${JWT_SECRET:default-secret-key-for-development-only-minimum-256-bits-required}
+  access-token-validity: 3600000     # 1시간
+  refresh-token-validity: 604800000  # 7일
+  issuer: writebuddy
+
 openai:
   api:
     key: ${OPENAI_API_KEY}

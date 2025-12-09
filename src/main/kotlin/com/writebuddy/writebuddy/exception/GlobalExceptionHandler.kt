@@ -78,15 +78,40 @@ class GlobalExceptionHandler {
         request: WebRequest
     ): ResponseEntity<ErrorResponse> {
         logger.warn("Custom validation error: {}", ex.message)
-        
+
         val errorResponse = ErrorResponse(
             status = HttpStatus.BAD_REQUEST.value(),
             error = "Validation Error",
             message = ex.message ?: "Validation failed",
             path = request.getDescription(false).removePrefix("uri=")
         )
-        
+
         return ResponseEntity.badRequest().body(errorResponse)
+    }
+
+    @ExceptionHandler(JwtException::class)
+    fun handleJwtException(
+        ex: JwtException,
+        request: WebRequest
+    ): ResponseEntity<ErrorResponse> {
+        val (status, error) = when (ex) {
+            is InvalidTokenException -> HttpStatus.UNAUTHORIZED to "Invalid Token"
+            is ExpiredTokenException -> HttpStatus.UNAUTHORIZED to "Expired Token"
+            is TokenNotFoundException -> HttpStatus.NOT_FOUND to "Token Not Found"
+            is AuthenticationException -> HttpStatus.UNAUTHORIZED to "Authentication Failed"
+            else -> HttpStatus.UNAUTHORIZED to "JWT Error"
+        }
+
+        logger.warn("JWT error: {}", ex.message)
+
+        val errorResponse = ErrorResponse(
+            status = status.value(),
+            error = error,
+            message = ex.message ?: "JWT authentication failed",
+            path = request.getDescription(false).removePrefix("uri=")
+        )
+
+        return ResponseEntity.status(status).body(errorResponse)
     }
 
     @ExceptionHandler(java.io.EOFException::class)

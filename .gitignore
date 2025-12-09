@@ -44,6 +44,9 @@ out/
 .claude/
 CLAUDE.md
 
+# Serena MCP related files
+.serena/
+
 # Configuration files with sensitive data
 src/main/resources/application.properties
 src/main/resources/application-prod.properties

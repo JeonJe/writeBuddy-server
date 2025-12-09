@@ -6,6 +6,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener
 
 @Entity
 @Table(
+    name = "corrections",
     indexes = [
         Index(name = "idx_correction_user_id", columnList = "user_id"),
         Index(name = "idx_correction_created_at", columnList = "created_at"),
@@ -37,12 +38,29 @@ class Correction(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     var user: User? = null,
-) : BaseEntity()
+) : BaseEntity() {
+
+    fun toggleFavorite() {
+        isFavorite = !isFavorite
+    }
+
+    fun updateMemo(newMemo: String?) {
+        memo = newMemo
+    }
+
+    fun assignToUser(newUser: User) {
+        user = newUser
+    }
+
+    fun hasScore(): Boolean = score != null
+
+    fun checkIsFavorite(): Boolean = isFavorite
+}
 
 enum class FeedbackType {
-    GRAMMAR,     // 문법 교정
-    SPELLING,    // 철자 교정
-    STYLE,       // 스타일 개선
-    PUNCTUATION, // 구두점 교정
-    SYSTEM       // 시스템 피드백 (fallback)
+    GRAMMAR,
+    SPELLING,
+    STYLE,
+    PUNCTUATION,
+    SYSTEM
 }

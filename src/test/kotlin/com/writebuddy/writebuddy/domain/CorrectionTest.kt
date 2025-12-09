@@ -122,4 +122,95 @@ class CorrectionTest {
             assertThat(correction).isInstanceOf(BaseEntity::class.java)
         }
     }
+
+    @Nested
+    @DisplayName("비즈니스 메서드 테스트")
+    inner class BusinessMethods {
+
+        @Test
+        @DisplayName("toggleFavorite로 즐겨찾기 상태를 토글할 수 있다")
+        fun toggleFavorite_changesFavoriteStatus() {
+            val correction = Correction(
+                originSentence = "test",
+                correctedSentence = "Test",
+                feedback = "feedback",
+                isFavorite = false
+            )
+
+            correction.toggleFavorite()
+            assertThat(correction.isFavorite).isTrue
+
+            correction.toggleFavorite()
+            assertThat(correction.isFavorite).isFalse
+        }
+
+        @Test
+        @DisplayName("updateMemo로 메모를 업데이트할 수 있다")
+        fun updateMemo_changesMemoCont() {
+            val correction = Correction(
+                originSentence = "test",
+                correctedSentence = "Test",
+                feedback = "feedback"
+            )
+
+            correction.updateMemo("새로운 메모")
+            assertThat(correction.memo).isEqualTo("새로운 메모")
+
+            correction.updateMemo(null)
+            assertThat(correction.memo).isNull()
+        }
+
+        @Test
+        @DisplayName("assignToUser로 사용자를 할당할 수 있다")
+        fun assignToUser_assignsUser() {
+            val correction = Correction(
+                originSentence = "test",
+                correctedSentence = "Test",
+                feedback = "feedback"
+            )
+            val user = User(username = "testuser", email = "test@test.com")
+
+            correction.assignToUser(user)
+
+            assertThat(correction.user).isEqualTo(user)
+        }
+
+        @Test
+        @DisplayName("hasScore로 점수 존재 여부를 확인할 수 있다")
+        fun hasScore_checksScoreExistence() {
+            val correctionWithScore = Correction(
+                originSentence = "test",
+                correctedSentence = "Test",
+                feedback = "feedback",
+                score = 7
+            )
+            val correctionWithoutScore = Correction(
+                originSentence = "test",
+                correctedSentence = "Test",
+                feedback = "feedback"
+            )
+
+            assertThat(correctionWithScore.hasScore()).isTrue
+            assertThat(correctionWithoutScore.hasScore()).isFalse
+        }
+
+        @Test
+        @DisplayName("checkIsFavorite로 즐겨찾기 여부를 확인할 수 있다")
+        fun checkIsFavorite_returnsFavoriteStatus() {
+            val favoriteCorrection = Correction(
+                originSentence = "test",
+                correctedSentence = "Test",
+                feedback = "feedback",
+                isFavorite = true
+            )
+            val normalCorrection = Correction(
+                originSentence = "test",
+                correctedSentence = "Test",
+                feedback = "feedback"
+            )
+
+            assertThat(favoriteCorrection.checkIsFavorite()).isTrue
+            assertThat(normalCorrection.checkIsFavorite()).isFalse
+        }
+    }
 }

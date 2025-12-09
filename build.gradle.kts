@@ -9,6 +9,11 @@ plugins {
 group = "com.writebuddy"
 version = "0.0.1-SNAPSHOT"
 
+val jjwtVersion = "0.12.3"
+val springAiVersion = "1.0.0-M4"
+val springDotenvVersion = "4.0.0"
+val mockitoKotlinVersion = "5.0.0"
+
 java {
 	sourceCompatibility = JavaVersion.VERSION_21
 	targetCompatibility = JavaVersion.VERSION_21
@@ -34,12 +39,16 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.retry:spring-retry")
-	implementation("me.paulschwarz:spring-dotenv:4.0.0")
+	implementation("me.paulschwarz:spring-dotenv:$springDotenvVersion")
 
 	// Spring AI dependencies
-	implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter:1.0.0-M4")
-	implementation("org.springframework.ai:spring-ai-retry:1.0.0-M4")
+	implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter:$springAiVersion")
+	implementation("org.springframework.ai:spring-ai-retry:$springAiVersion")
 
+	// JWT dependencies
+	implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
+	runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+	runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
 
 	compileOnly("org.projectlombok:lombok")
 	runtimeOnly("org.postgresql:postgresql")
@@ -49,7 +58,7 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-	testImplementation("org.mockito.kotlin:mockito-kotlin:5.0.0")
+	testImplementation("org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -66,4 +75,6 @@ allOpen {
 	annotation("jakarta.persistence.Embeddable")
 }
 
-// Test configuration removed for Railway deployment compatibility
+tasks.withType<Test> {
+	useJUnitPlatform()
+}
