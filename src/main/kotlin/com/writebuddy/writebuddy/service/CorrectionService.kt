@@ -88,14 +88,15 @@ class CorrectionService(
         val totalStartTime = System.currentTimeMillis()
         logger.info("비동기 병렬 교정 요청 시작: {}", request.originSentence)
 
+        val future = asyncCorrectionService.generateCorrectionWithExamplesParallel(request.originSentence)
+
         try {
-            val future = asyncCorrectionService.generateCorrectionWithExamplesParallel(request.originSentence)
-            val (correctionData, examples) = future[15, TimeUnit.SECONDS]
+            // GPT-5는 느리므로 타임아웃 60초로 설정
+            val (correctionData, examples) = future[60, TimeUnit.SECONDS]
             val (corrected, feedback, feedbackTypeStr, score, originTranslation, correctedTranslation) = correctionData
 
             val processingTime = System.currentTimeMillis() - totalStartTime
-            logger.info("비동기 처리 완료: {}ms (기존 동기 대비 {}ms 단축)",
-                       processingTime, (20000 - processingTime).coerceAtLeast(0))
+            logger.info("비동기 처리 완료: {}ms", processingTime)
 
             val feedbackType = parseFeedbackType(feedbackTypeStr)
 
@@ -115,16 +116,17 @@ class CorrectionService(
             val savedCorrection = correctionRepository.save(correction)
 
             val totalTime = System.currentTimeMillis() - totalStartTime
-            logger.info("전체 비동기 처리 완료: {}ms, id={}, 예시: {}개, 성능 개선: {}%",
-                       totalTime, savedCorrection.id, examples.size,
-                       ((20000.0 - totalTime) / 20000.0 * 100).coerceAtLeast(0.0).toInt())
+            logger.info("전체 비동기 처리 완료: {}ms, id={}, 예시: {}개",
+                       totalTime, savedCorrection.id, examples.size)
 
             return Pair(savedCorrection, examples)
 
         } catch (e: java.util.concurrent.TimeoutException) {
-            logger.error("비동기 처리 타임아웃 (15초), 동기 방식으로 폴백")
+            future.cancel(true) // 비동기 작업 취소
+            logger.error("비동기 처리 타임아웃 (60초), 동기 방식으로 폴백")
             return saveWithExamples(request, userId)
         } catch (e: Exception) {
+            future.cancel(true) // 비동기 작업 취소
             logger.error("비동기 처리 실패: {}, 동기 방식으로 폴백", e.message)
             return saveWithExamples(request, userId)
         }

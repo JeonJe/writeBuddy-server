@@ -4,7 +4,6 @@ import com.writebuddy.writebuddy.controller.dto.request.CreateUserRequest
 import com.writebuddy.writebuddy.controller.dto.request.UserRegistrationRequest
 import com.writebuddy.writebuddy.controller.dto.response.UserResponse
 import com.writebuddy.writebuddy.domain.User
-import com.writebuddy.writebuddy.domain.UserRole
 import com.writebuddy.writebuddy.exception.ValidationException
 import com.writebuddy.writebuddy.repository.UserRepository
 import com.writebuddy.writebuddy.repository.CorrectionRepository

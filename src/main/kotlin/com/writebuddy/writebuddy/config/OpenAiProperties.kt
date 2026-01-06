@@ -12,7 +12,8 @@ data class OpenAiProperties @ConstructorBinding constructor(
         val key: String,
         val baseUrl: String,
         val model: String,
-        val temperature: Double,
+        val chatModel: String = "gpt-4o-mini",
+        val temperature: Double? = null,
         val endpoint: String
     )
     

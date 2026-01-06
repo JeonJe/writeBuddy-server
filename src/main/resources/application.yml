@@ -5,10 +5,7 @@ spring:
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
-      chat:
-        options:
-          model: gpt-4o-mini
-          temperature: 0.3
+      chat-model: gpt-4o-mini
       retry:
         max-attempts: 3
         backoff:
@@ -27,9 +24,11 @@ spring:
       connection-init-sql: SELECT 1
       validation-timeout: 3000      # 3초로 줄임
       auto-commit: true
-      leak-detection-threshold: 30000  # 30초로 더 엄격하게
+      leak-detection-threshold: 90000  # GPT-5는 느리므로 90초
   
   jpa:
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect  # 명시적 dialect 설정
@@ -75,8 +74,8 @@ openai:
   api:
     key: ${OPENAI_API_KEY}
     base-url: https://api.openai.com/v1
-    model: gpt-4o-mini
-    temperature: 0.3
+    model: gpt-5-mini
+    chat-model: gpt-4o-mini
     endpoint: /chat/completions
   timeout:
     connect: 10     # 연결 타임아웃 (초)

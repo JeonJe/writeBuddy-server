@@ -119,12 +119,16 @@ class OpenAiClient(
             "model" to openAiProperties.api.model,
             "messages" to messages
         )
-        
-        // GPT-5 models don't support temperature parameter
-        if (!openAiProperties.api.model.startsWith("gpt-5")) {
-            request["temperature"] = openAiProperties.api.temperature
+
+        // GPT-5/o1/o3 models don't support temperature parameter
+        val model = openAiProperties.api.model
+        val isReasoningModel = model.startsWith("gpt-5") || model.startsWith("o1") || model.startsWith("o3")
+        val temperature = openAiProperties.api.temperature
+
+        if (!isReasoningModel && temperature != null) {
+            request["temperature"] = temperature
         }
-        
+
         return request
     }
 

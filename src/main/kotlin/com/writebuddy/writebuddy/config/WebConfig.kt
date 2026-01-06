@@ -1,6 +1,8 @@
 package com.writebuddy.writebuddy.config
 
 import org.springframework.context.annotation.Configuration
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
+import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
@@ -17,5 +19,17 @@ class WebConfig : WebMvcConfigurer {
             .allowedHeaders("*")
             .allowCredentials(true)
             .maxAge(3600)
+    }
+
+    override fun configureAsyncSupport(configurer: AsyncSupportConfigurer) {
+        val executor = ThreadPoolTaskExecutor()
+        executor.corePoolSize = 5
+        executor.maxPoolSize = 20
+        executor.queueCapacity = 50
+        executor.setThreadNamePrefix("WebMvc-Async-")
+        executor.initialize()
+
+        configurer.setTaskExecutor(executor)
+        configurer.setDefaultTimeout(120000) // 2분
     }
 }
