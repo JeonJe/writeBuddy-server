@@ -24,7 +24,7 @@ class WeakAreaAnalysis(
     val lastOccurrence: java.time.LocalDateTime, // 마지막 발생 시점
     val improvementRate: Double = 0.0, // 개선율 (0.0 ~ 1.0)
     val severity: WeakAreaSeverity, // 심각도
-    @Lob
+    @Column(columnDefinition = "TEXT")
     val exampleMistakes: String? = null // JSON 형태의 실수 예시들
 ) : BaseEntity()
 

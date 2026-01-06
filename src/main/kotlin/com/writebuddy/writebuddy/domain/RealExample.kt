@@ -20,7 +20,7 @@ class RealExample(
     @Enumerated(EnumType.STRING)
     val sourceType: ExampleSourceType, // 출처 타입
     
-    @Lob
+    @Column(columnDefinition = "TEXT")
     val context: String,             // 사용된 맥락/상황 설명
     
     @Column(length = 500)

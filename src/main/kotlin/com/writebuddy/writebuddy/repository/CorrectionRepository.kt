@@ -95,6 +95,14 @@ interface CorrectionRepository : JpaRepository<Correction, Long> {
     fun findByIsFavoriteTrue(): List<Correction>
     
     @Query("""
+        SELECT c FROM Correction c 
+        WHERE c.user.id = :userId 
+        AND c.isFavorite = true
+        ORDER BY c.createdAt DESC
+    """)
+    fun findFavoritesByUserId(@Param("userId") userId: Long): List<Correction>
+    
+    @Query("""
         SELECT c.id as id, c.originSentence as originSentence, c.correctedSentence as correctedSentence,
                c.feedbackType as feedbackType, c.score as score, c.isFavorite as isFavorite,
                c.createdAt as createdAt

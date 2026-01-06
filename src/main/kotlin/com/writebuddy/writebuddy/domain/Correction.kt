@@ -23,17 +23,17 @@ class Correction(
     val id: Long = 0,
     val originSentence: String,
     val correctedSentence: String,
-    @Lob
+    @Column(columnDefinition = "TEXT")
     val feedback: String,
     @Enumerated(EnumType.STRING)
     val feedbackType: FeedbackType = FeedbackType.GRAMMAR,
     val score: Int? = null,
     var isFavorite: Boolean = false,
-    @Lob
+    @Column(columnDefinition = "TEXT")
     var memo: String? = null,
-    @Lob
+    @Column(columnDefinition = "TEXT")
     val originTranslation: String? = null,
-    @Lob
+    @Column(columnDefinition = "TEXT")
     val correctedTranslation: String? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
