@@ -65,6 +65,10 @@ com.writebuddy.writebuddy
 ### 📊 통계 (최적화된 통합 API)
 - `GET /statistics` - 모든 통계 데이터 단일 호출
 
+### 📖 단어/문법 검색
+- `GET /words/search` - 영어 단어 검색
+- `GET /words/grammar/search` - 영어 문법 검색
+
 ### 🔐 인증
 - `GET /auth/user` - 현재 사용자 정보
 - `POST /logout` - 로그아웃
